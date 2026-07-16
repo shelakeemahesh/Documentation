@@ -5,10 +5,110 @@ description: "Learn about JSX & Components in our comprehensive Full Stack Guide
 
 # JSX & Components
 
-Welcome to the section on **JSX & Components**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for JSX & Components.
+JSX (JavaScript XML) is a syntax extension for JavaScript that allows you to write HTML-like markup directly inside React components. React components are the building blocks of user interfaces, enabling engineers to split complex layouts into modular, reusable, and self-contained pieces of code.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the relationship between JSX and React components is crucial for clean application design.
+
+### How JSX Works Under the Hood
+Browsers cannot read JSX directly. A transpiler (such as Babel or SWC) compiles JSX syntax down to standard JavaScript function calls. In modern React, JSX like `<div className="box">Hello</div>` compiles to:
+```javascript
+import { jsx as _jsx } from 'react/jsx-runtime';
+_jsx('div', { className: 'box', children: 'Hello' });
+```
+
+### Component Definition and Naming
+React components are standard JavaScript functions that return JSX. By convention, React component names **must start with a capital letter** (e.g., `UserProfile`). Lowercase names are reserved for standard HTML tags (e.g., `div`, `section`, `span`).
+
+### JSX Syntactic Rules
+*   **Single Root Element**: JSX expressions must return a single root element. If you have adjacent sibling elements, you must group them under a common parent container or a React Fragment (`<>...</>`) to prevent syntax compilation errors.
+*   **JavaScript Expressions**: You can embed any valid JavaScript expression inside JSX by wrapping it in curly braces (`{}`). This is useful for conditional logic, variable mapping, and calculations.
+*   **CSS Class Names**: Since `class` is a reserved keyword in JavaScript, you must use `className` to define CSS classes in JSX. Similarly, use `htmlFor` instead of `for` for form labels.
+
+---
+
+## Code Example
+
+Here is a practical, type-safe React component demonstrating JSX rules, component modularity, array rendering, and conditional styles:
+
+```tsx
+import React from 'react';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  inStock: boolean;
+}
+
+interface ProductListProps {
+  title: string;
+  items: Product[];
+}
+
+export function ProductList({ title, items }: ProductListProps) {
+  return (
+    <section className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
+      <h2 className="text-xl font-bold text-zinc-100 mb-4">{title}</h2>
+      
+      {items.length === 0 ? (
+        <p className="text-zinc-500">No products available at this time.</p>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((product) => (
+            <li
+              key={product.id}
+              className="flex justify-between items-center p-3 bg-zinc-950 rounded-lg border border-zinc-900"
+            >
+              <span className="text-zinc-300 font-medium">{product.name}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-zinc-400 font-mono">${product.price.toFixed(2)}</span>
+                <span
+                  className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                    product.inStock
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                  }`}
+                >
+                  {product.inStock ? 'In Stock' : 'Out of Stock'}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+*   **Keep Components Small**: Follow the single responsibility principle; build atomic components and compose them to build large modules.
+*   **Prefer React Fragments**: Use `<></>` instead of empty wrapper `div`s to prevent unnecessary depth in the DOM tree, optimizing layout layouts.
+*   **Enforce Props Types**: Always use TypeScript interfaces or types to declare props shapes, ensuring editor autocompletion and compiler checks.
+*   **Extract Inline JSX Logic**: If a conditional expression or mapper function exceeds 4–5 lines of JSX code, extract it to a helper function or a sub-component.
+
+---
+
+## Common Mistakes
+
+*   **Lowercase component names**: Defining components starting with a lowercase letter (e.g. `function item()`), which makes React compile it as an HTML tag, throwing errors or ignoring styling.
+*   **Missing key prop during arrays map**: Omitting the `key` prop when looping over elements, which prevents React from tracking index movements and degrades reconciliation performance.
+*   **Inline styles object syntax mismatch**: Passing CSS strings (like `style="color: red"`) instead of React style objects (like `style={{ color: 'red' }}`).
+
+<Callout type="warning" title="Importance of Keys">
+  Always use a unique and stable identifier (like a database ID or UUID) for the `key` prop when mapping arrays. Avoid using the array index as a key; if the array items are filtered, sorted, or deleted, index-based keys will lead to rendering bugs and loss of local component state.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JSX is syntactically compiled into standard JavaScript function calls.
+*   Components must be capitalized and return a single root JSX node.
+*   Curly braces `{}` are used to run JavaScript expressions dynamically inside HTML-like structures.
+*   Stable and unique keys are critical during array iteration for the Virtual DOM reconciliation.

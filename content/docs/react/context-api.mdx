@@ -5,10 +5,102 @@ description: "Learn about Context API in our comprehensive Full Stack Guide."
 
 # Context API
 
-Welcome to the section on **Context API**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Context API.
+The React Context API provides a mechanism to share state, data, or configuration settings globally across a component tree without manually passing props through intermediate layers—a problem commonly referred to as **prop drilling**. Context is ideal for data that is considered "global" for an application, such as user authentication states, visual themes, or language localization.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the architecture of Context is key to avoiding performance bottlenecks and state propagation issues.
+
+### Creation, Provision, and Consumption
+Context operations involve three core components:
+1.  **`createContext`**: Initializes the context object. You can specify a default value, which is used only when a component consumes context without a matching Provider in its parent tree.
+2.  **`Provider`**: A React component that wraps a section of the component tree and accepts a `value` prop. All descendant components can access this value.
+3.  **`useContext`**: A React hook used by child components to read the current context value from the nearest matching Provider above it in the tree.
+
+### Re-rendering Behavior
+When the `value` passed to a Context Provider changes, all descendant components that consume the context via `useContext` will immediately re-render. Intermediate components that do not consume the context are skipped. Because of this behavior, frequently updating state in a global context can trigger massive, unoptimized re-renders across your entire UI.
+
+---
+
+## Code Example
+
+Here is a clean implementation of a global **Theme Context** supporting light/dark toggles, memoized provider values, and a custom hook helper:
+
+```tsx
+import React, { createContext, useContext, useState, useMemo } from 'react';
+
+type Theme = 'light' | 'dark';
+
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+}
+
+// 1. Create Context with undefined default (enforced via TypeScript guard)
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+// 2. Custom Provider Component
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>('dark');
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  // Memoize the value to prevent unnecessary re-renders of consumers
+  const value = useMemo(
+    () => ({
+      theme,
+      toggleTheme,
+    }),
+    [theme]
+  );
+
+  return (
+    <ThemeContext.Provider value={value}>
+      <div className={theme === 'dark' ? 'dark bg-zinc-950 text-zinc-50' : 'bg-white text-zinc-900'}>
+        {children}
+      </div>
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. Custom Consumer Hook with safety check
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Export a Custom Consumer Hook**: Always wrap `useContext` in a custom hook that checks if the context is `undefined`. This displays descriptive error messages if the hook is called outside the Provider.
+*   **Memoize Context Values**: Always wrap the context `value` object in a `useMemo` hook. Without this, the context value object is recreated on every render of the Provider's parent, forcing all consumer components to re-render.
+*   **Keep Context Focused**: Do not put your entire application state in a single global context. Create separate contexts for distinct concerns (e.g. `AuthContext`, `ThemeContext`, `CartContext`).
+*   **Keep Providers Close to Consumers**: Only wrap the parts of the tree that actually need the context rather than placing all providers at the absolute root of the application.
+
+---
+
+## Common Mistakes
+
+*   **Using Context for high-frequency state updates**: Storing real-time data (like mouse coordinates or rapid form inputs) in Context, which causes performance lag due to frequent global re-renders.
+*   **Forgetting to wrap the app in the Provider**: Attempting to use a context consumer hook in a component that is not nested under the Provider in `layout.tsx`, throwing runtime exceptions.
+*   **Recreating provider value objects on every render**: Passing raw inline objects directly to the provider (like `value={{ theme, toggleTheme }}`) without using `useMemo`.
+
+<Callout type="warning" title="Context is Not State Management">
+  Context is a dependency injection tool, not a full state management solution. For complex state flows, high-frequency updates, or complex side effects, use dedicated libraries like Zustand or Redux Toolkit.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Context API bypasses prop-drilling by providing data directly to descendants.
+*   Every consumer component re-renders whenever the Provider's value updates.
+*   Wrap provider objects in `useMemo` to prevent unneeded consumer renders.
+*   Implement custom hooks (like `useTheme`) to safely access context values.

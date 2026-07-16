@@ -5,10 +5,120 @@ description: "Learn about React Router in our comprehensive Full Stack Guide."
 
 # React Router
 
-Welcome to the section on **React Router**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for React Router.
+React Router is the standard client-side routing library for React applications. It enables the creation of Single-Page Applications (SPAs) by mapping URL paths to specific React components, allowing developers to handle complex navigation flows and page updates without triggering expensive browser page refreshes.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Mastering modern React Router (v6+) requires understanding layout architectures and routing APIs.
+
+### Client-Side Routing vs. Server-Side Routing
+In traditional websites, clicking a link requests a new HTML document from the server. In React Router, navigation is handled entirely in the browser. When the URL changes, React Router intercepts the request, blocks the page refresh, updates the history stack, and mounts the matching component tree instantly.
+
+### Modern Data Routers (v6.4+)
+React Router v6.4 introduced Data Routers (via `createBrowserRouter` and `RouterProvider`). This approach decouples route definitions from the React rendering tree, allowing the router to fetch data (via loaders) and handle forms (via actions) concurrently while rendering layouts.
+
+### Nested Routes and Outlets
+Applications often share UI layouts across pages (such as sidebars, headers, and navigation bars). React Router supports nesting route definitions. Parent components render an `<Outlet />` component, which acts as a placeholder that gets filled by the matching nested child route.
+
+### Dynamic Route Segments
+Paths can contain dynamic parameters (e.g. `/users/:id`). These values can be extracted inside components using the `useParams` hook to fetch specific records.
+
+---
+
+## Code Example
+
+Here is a modern, type-safe configuration using `createBrowserRouter`, nested layout wrappers, route loaders, and error boundaries:
+
+```tsx
+import React from 'react';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Outlet,
+  Link,
+  useParams,
+  useLoaderData,
+} from 'react-router-dom';
+
+// 1. Layout Component with Sidebar and Outlet
+function AppLayout() {
+  return (
+    <div className="flex min-h-screen bg-zinc-950 text-zinc-50">
+      <aside className="w-64 border-r border-zinc-800 p-6 space-y-4">
+        <h3 className="font-bold text-amber-500">Navigation</h3>
+        <nav className="flex flex-col gap-2">
+          <Link to="/" className="text-zinc-300 hover:text-zinc-50">Home</Link>
+          <Link to="/users/1" className="text-zinc-300 hover:text-zinc-50">User Profile</Link>
+        </nav>
+      </aside>
+      <main className="flex-1 p-8">
+        <Outlet /> {/* Child routes render here */}
+      </main>
+    </div>
+  );
+}
+
+// 2. Dynamic Profile Page with useParams
+function UserProfile() {
+  const { id } = useParams<{ id: string }>();
+  return (
+    <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl">
+      <h2 className="text-xl font-bold mb-2">User Profile</h2>
+      <p className="text-zinc-400">Viewing details for User ID: <span className="font-mono text-amber-500">{id}</span></p>
+    </div>
+  );
+}
+
+// 3. Router Configuration
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    errorElement: <div className="p-8 text-rose-500">Route Error: Page Not Found</div>,
+    children: [
+      {
+        index: true,
+        element: <div className="text-zinc-200">Welcome to the Dashboard!</div>,
+      },
+      {
+        path: 'users/:id',
+        element: <UserProfile />,
+      },
+    ],
+  },
+]);
+
+export function App() {
+  return <RouterProvider router={router} />;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Data Routers**: Declare routes using `createBrowserRouter` instead of the legacy `<BrowserRouter>` JSX wrapper to leverage v6.4+ loader and action performance upgrades.
+*   **Enforce Client-Side Links**: Always navigate using React Router's `<Link>` or `<NavLink>` components to prevent page refreshes.
+*   **Implement Lazy Loading**: Code-split route components using `React.lazy` and `Suspense` to load page bundle files only when the route is requested by the user.
+*   **Declare Route-Level Error Boundaries**: Add an `errorElement` to parent routes to catch errors gracefully and prevent the entire application from crashing.
+
+---
+
+## Common Mistakes
+
+*   **Using traditional HTML `<a>` tags**: Using `<a href="/path">` which bypasses the router and triggers a full page refresh, losing application state.
+*   **Accessing params outside route paths**: Expecting `useParams()` or `useLocation()` to work in components that are not children of the `<RouterProvider>` or outside defined route configurations.
+*   **Forgetting the `<Outlet />` component**: Setting up nested routes in configuration but omitting the `<Outlet />` in the parent layout component, causing child routes to never display.
+
+<Callout type="note" title="Loaders and Actions">
+  React Router loaders let you fetch data *before* the component renders, preventing UI "flash" states (like loading spinners) and improving user experience.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   React Router enables client-side routing without triggering browser refreshes.
+*   `<Outlet />` is used in parent layouts to render nested child components.
+*   `useParams` retrieves dynamic path parameters like user or product IDs.
+*   Use `createBrowserRouter` to handle route transitions and pre-fetch data.

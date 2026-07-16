@@ -5,10 +5,87 @@ description: "Learn about Introduction & Setup (Vite) in our comprehensive Full 
 
 # Introduction & Setup (Vite)
 
-Welcome to the section on **Introduction & Setup (Vite)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction & Setup (Vite).
+React is a popular JavaScript library for building user interfaces, focusing on component-driven development and efficient DOM rendering. To develop React applications today, Vite is the standard build tool of choice, replacing the legacy Create React App (CRA). Vite leverages native ES Modules (ESM) in the browser to deliver blazing-fast startup times and instant Hot Module Replacement (HMR) during local development.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Developing React applications requires an efficient bundling pipeline. Vite provides this through two main mechanisms during its lifecycle:
+
+### Native ESM in Development
+Traditional bundlers (like Webpack or Rollup) bundle the entire application before starting the dev server. As the codebase grows, dev server startup slows down. Vite resolves this by serving source files over native ESM, letting the browser perform the bundling work on the fly. Files are loaded only when requested by the active page.
+
+### Dependency Pre-bundling with Esbuild
+Dependencies (like React or Lodash) do not change frequently during development. Vite pre-bundles these dependencies using Esbuild (written in Go), which compiles code 10x–100x faster than traditional JS-based bundlers. This step converts CommonJS modules into ESM-compliant files so they can be loaded cleanly by the browser.
+
+---
+
+## Code Example
+
+To initialize a new React application with TypeScript using Vite, run the following commands in your shell:
+
+```bash
+# Scaffold a React project using Vite template
+npm create vite@latest my-react-app -- --template react-ts
+
+# Navigate to project folder
+cd my-react-app
+
+# Install dependencies
+npm install
+
+# Start local development server
+npm run dev
+```
+
+Here is a standard, minimal configuration for `vite.config.ts` using custom path aliases:
+
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 3000,
+    open: true,
+  },
+});
+```
+
+---
+
+## Best Practices
+
+*   **Scaffold with TypeScript**: Use TypeScript by default to prevent runtime errors and benefit from autocomplete signatures.
+*   **Configure Path Aliases**: Avoid deep nested relative imports (e.g. `../../../../components`) by setting up `@/` aliases in `vite.config.ts` and `tsconfig.json`.
+*   **Keep Node Updated**: Ensure you are using active LTS versions of Node.js (Node 20+) to run modern build dependencies smoothly.
+*   **Leverage SVG Components**: Import SVGs as React components instead of standard image tags to allow dynamic color and size manipulation via CSS props.
+*   **Maintain Clean Scripts**: Keep dependency installation clean by utilizing lockfiles (`package-lock.json` or `pnpm-lock.yaml`) to lock module versions across teams.
+
+---
+
+## Common Mistakes
+
+*   **Committing local environment files**: Committing confidential keys or database credentials by forgetting to add `.env.local` to the `.gitignore`.
+*   **Assuming Vite injects env vars globally**: Forgetting that environment variables must be prefixed with `VITE_` to be exposed to client-side code.
+*   **Using standard React scripts commands**: Trying to run `npm run start` (from CRA) instead of Vite's standard `npm run dev` script.
+
+<Callout type="tip" title="Vite Environment Variables">
+  Vite exposes environment variables on `import.meta.env` instead of `process.env`. Only variables starting with `VITE_` (e.g. `VITE_API_URL`) are loaded into the client bundle to prevent accidental secret leakage.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Vite uses native ESM in development for instant startup and leverages Rollup for optimized production builds.
+*   Dependencies are pre-bundled using Esbuild to standardise module compilation.
+*   Environment variables are accessed via `import.meta.env.VITE_VARIABLE_NAME`.
+*   Always use TypeScript template defaults to ensure code safety.

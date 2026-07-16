@@ -5,10 +5,128 @@ description: "Learn about Hooks (useState, useEffect, useMemo, useCallback, cust
 
 # Hooks (useState, useEffect, useMemo, useCallback, custom hooks)
 
-Welcome to the section on **Hooks (useState, useEffect, useMemo, useCallback, custom hooks)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Hooks (useState, useEffect, useMemo, useCallback, custom hooks).
+React Hooks are specialized functions that allow functional components to hook into React state and lifecycle features. Introduced in React 16.8, hooks solved the problems of complex stateful logic reuse, bloated class components, and confusing `this` binding, establishing functional programming as the modern React standard.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the Rules of Hooks and the core hook APIs is essential for writing clean, optimized React applications.
+
+### The Rules of Hooks
+React relies on the order in which Hooks are called. To ensure this order remains stable, you must follow two rules:
+1.  **Only Call Hooks at the Top Level**: Do not call Hooks inside loops, conditions, or nested functions.
+2.  **Only Call Hooks from React Functions**: Call Hooks only from React function components or custom Hooks.
+
+### Core Built-in Hooks
+*   **`useState`**: Declares a local state variable, returning the current state value and a setter function to update it.
+*   **`useEffect`**: Performs side effects in functional components (such as data fetching, subscription setup, or manual DOM updates). It runs after rendering.
+*   **`useMemo`**: Cache the result of an expensive calculation, recomputing it only when one of its dependencies changes.
+*   **`useCallback`**: Cache a function definition itself between renders, preventing child components from re-rendering when passed as props.
+*   **Custom Hooks**: Standard JavaScript functions starting with `use` (e.g. `useFetch`) that call other hooks, allowing you to extract component logic into reusable modules.
+
+---
+
+## Code Example
+
+Here is a full example illustrating `useState`, `useEffect` with cleanup, `useCallback`, and a custom hook `useFetch`:
+
+```tsx
+import React, { useState, useEffect, useCallback } from 'react';
+
+// Custom hook to fetch data
+function useFetch<T>(url: string): { data: T | null; loading: boolean; error: Error | null } {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((payload) => {
+        if (active) {
+          setData(payload);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          setError(err);
+          setLoading(false);
+        }
+      });
+
+    // Cleanup function: runs when component unmounts or URL changes
+    return () => {
+      active = false;
+    };
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export function UserProfile({ userId }: { userId: number }) {
+  // Use custom hook
+  const { data: user, loading, error } = useFetch<User>(
+    `https://jsonplaceholder.typicode.com/users/${userId}`
+  );
+
+  // Memoize handler using useCallback to prevent recreation on every render
+  const handleContactClick = useCallback((email: string) => {
+    alert(`Contacting user at: ${email}`);
+  }, []);
+
+  if (loading) return <div className="text-zinc-400">Loading user details...</div>;
+  if (error || !user) return <div className="text-rose-500">Failed to load user.</div>;
+
+  return (
+    <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-xl max-w-md">
+      <h3 className="text-lg font-bold text-zinc-100">{user.name}</h3>
+      <p className="text-sm text-zinc-400 font-mono mb-4">{user.email}</p>
+      <button
+        onClick={() => handleContactClick(user.email)}
+        className="px-4 py-2 bg-amber-500 text-zinc-950 font-semibold rounded-lg hover:bg-amber-400 transition-colors"
+      >
+        Contact User
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+*   **Always Clean Up Side Effects**: Return a cleanup function inside `useEffect` to clear timeouts, intervals, event listeners, and abort network requests.
+*   **Correctly Specify Dependencies**: Every external variable referenced inside a hook must be declared in its dependency array to prevent stale closure bugs.
+*   **Avoid Over-Memoization**: Do not wrap every function or calculation in `useCallback` or `useMemo`. Use them only for heavy calculations or when passing props to memoized children.
+*   **Keep Custom Hooks Pure**: Ensure custom hooks focus on logic extraction (like state management or fetching) and leave the UI rendering to components.
+
+---
+
+## Common Mistakes
+
+*   **Calling hooks conditionally**: Placing hooks inside `if` statements, causing React to mismatch hooks sequences on subsequent renders.
+*   **Omitting dependencies from the dependency array**: Creating stale state references where variables capture old values from prior renders.
+*   **Creating infinite render loops**: Calling a state setter inside `useEffect` without providing a dependency array, triggering continuous re-renders.
+
+<Callout type="warning" title="React ESLint Rules">
+  Install and enable `eslint-plugin-react-hooks`. It enforces the rules of hooks and flags missing dependencies in `useEffect`, `useCallback`, and `useMemo` hooks, preventing common reactivity bugs during compilation.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Hooks enable functional components to maintain state and tap into lifecycle cycles.
+*   The sequence of hooks calls must be consistent across renders (no conditional calls).
+*   `useEffect` cleanup is critical for avoiding memory leaks.
+*   Custom hooks enable clean sharing of stateful logic without component wrapper layers.

@@ -5,10 +5,136 @@ description: "Learn about Testing React Apps (RTL) in our comprehensive Full Sta
 
 # Testing React Apps (RTL)
 
-Welcome to the section on **Testing React Apps (RTL)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Testing React Apps (RTL).
+Testing React applications ensures component correctness, prevents codebase regressions, and gives developers confidence when refactoring. **React Testing Library (RTL)** is the industry-standard framework for testing React components. It replaces legacy testing tools (like Enzyme) by focusing on testing components from the user's perspective, asserting on rendered output and accessibility trees rather than internal state variables or component instances.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Writing reliable tests in React requires understanding RTL's queries, user interaction triggers, and asynchronous assertion mechanisms.
+
+### Testing User Behavior, Not Implementation
+RTL is guided by a core philosophy: *"The more your tests resemble the way your software is used, the more confidence they can give you."* Consequently, tests should not inspect component local state, internal functions, or parent-child structures. If a user can see a header, type in an input, and click a submit button, your test should query the header, type in the input, and click the button in the same way.
+
+### Query Priority
+RTL provides query methods to locate elements on the page. You should prioritize queries that mimic how assistive technologies (like screen readers) navigate the DOM:
+1.  **Queries Accessible to Everyone**: `getByRole` (e.g. searching for `button`, `heading`, `textbox`), `getByLabelText`, `getByPlaceholderText`, `getByText`.
+2.  **Semantic Queries**: `getByAltText` (for images), `getByTitle`.
+3.  **Test IDs**: `getByTestId` (used only when elements cannot be queried via roles or text, such as dynamic layouts or canvas grids).
+
+### The Types of Queries
+RTL queries are prefixed with `getBy`, `queryBy`, or `findBy`:
+-   **`getBy...`**: Sync query. Throws an error if the element is not found or if multiple elements match.
+-   **`queryBy...`**: Sync query. Returns `null` if the element is not found, making it ideal for asserting that an element is *not* present in the DOM.
+-   **`findBy...`**: Async query. Returns a Promise that resolves when the element appears in the DOM. It automatically polls the DOM for up to 1000ms.
+
+---
+
+## Code Example
+
+Here is a full component test using **Vitest** and **React Testing Library** that mock API fetches, simulates text typing, triggers clicks, and awaits async UI changes:
+
+```tsx
+import React, { useState } from 'react';
+
+// 1. Component to Test
+export function FeedbackForm({ onSubmit }: { onSubmit: (text: string) => Promise<void> }) {
+  const [feedback, setFeedback] = useState<string>('');
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback.trim()) return;
+    setStatus('submitting');
+    await onSubmit(feedback);
+    setStatus('success');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="p-6 bg-zinc-900 rounded-xl space-y-4">
+      <label htmlFor="feedback-input" className="block text-sm font-semibold text-zinc-300">
+        Leave Feedback
+      </label>
+      <textarea
+        id="feedback-input"
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+        placeholder="Write your review here..."
+        className="w-full p-2 bg-zinc-950 border border-zinc-800 text-zinc-200 rounded"
+      />
+      <button
+        type="submit"
+        disabled={status === 'submitting' || !feedback.trim()}
+        className="px-4 py-2 bg-amber-500 text-zinc-950 font-bold rounded disabled:opacity-40"
+      >
+        {status === 'submitting' ? 'Submitting...' : 'Submit Feedback'}
+      </button>
+      {status === 'success' && <p className="text-emerald-400">Thank you for your feedback!</p>}
+    </form>
+  );
+}
+
+// 2. Vitest Test Suite (setup under feedback-form.test.tsx)
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+describe('FeedbackForm Component', () => {
+  it('allows user to submit feedback and shows success message', async () => {
+    const mockSubmit = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+
+    // Render component
+    render(<FeedbackForm onSubmit={mockSubmit} />);
+
+    // Query elements
+    const input = screen.getByLabelText(/leave feedback/i);
+    const submitButton = screen.getByRole('button', { name: /submit feedback/i });
+
+    // Assert initial disabled button state
+    expect(submitButton).toBeDisabled();
+
+    // Type text in inputs
+    await user.type(input, 'Excellent guide!');
+    expect(submitButton).toBeEnabled();
+
+    // Trigger form submission click
+    await user.click(submitButton);
+
+    // Verify mock function call
+    expect(mockSubmit).toHaveBeenCalledWith('Excellent guide!');
+
+    // Wait for async changes (findBy queries poll the DOM)
+    const successMsg = await screen.findByText(/thank you for your feedback/i);
+    expect(successMsg).toBeInTheDocument();
+  });
+});
+```
+
+---
+
+## Best Practices
+
+*   **Prioritize `getByRole`**: Always query elements using `getByRole("button", { name: "Label" })`. This tests your application's accessibility tree and ensures links, inputs, and buttons are accessible.
+*   **Use `user-event` over `fireEvent`**: The `user-event` package simulates full browser mouse and keyboard events (including hover and keyup states), whereas `fireEvent` simply dispatches synthetic events.
+*   **Avoid Manual `act()` Wrappers**: RTL automatically wraps calls to user events and async queries in `act()`. Adding manual `act()` blocks adds clutter and is rarely necessary.
+*   **Utilize Mock Service Worker (MSW)**: Instead of mocking `fetch` or axios promises at the file level, use MSW to intercept HTTP requests at the network level for cleaner, more realistic integration tests.
+
+---
+
+## Common Mistakes
+
+*   **Querying by class names or CSS selectors**: Using `container.querySelector('.btn-primary')` to target elements, which makes your tests fragile and breaks them when styling classes are refactored.
+*   **Incorrectly using `queryBy` for assertions**: Asserting presence using `queryByText`, which fails to throw an error if the element is missing, compared to `getByText` which will fail immediately.
+*   **Omitting `await` on asynchronous user actions**: Forgetting that `user.type()` or `user.click()` are asynchronous calls that return Promises, causing tests to run assertions before state changes resolve.
+
+<Callout type="tip" title="Testing Accessible Names">
+  If you struggle to find the accessible role or name of an element, use `screen.logTestingPlaygroundURL()` in your test. This will output a URL showing the components tree and suggest the best queries to use.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   React Testing Library asserts on DOM outputs, not component state.
+*   Always favor accessibility-centric queries like `getByRole`.
+*   Use `user-event` to simulate realistic click and typing keyboard behaviors.
+*   Use `queryBy...` to assert element absence, and `findBy...` to await async changes.

@@ -5,10 +5,117 @@ description: "Learn about Props & State in our comprehensive Full Stack Guide."
 
 # Props & State
 
-Welcome to the section on **Props & State**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Props & State.
+Props (properties) and State are the twin pillars of data management in React applications. While props allow parent components to pass configuration data down the component tree, state allows components to maintain and update their own local data dynamically in response to user events.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Developing responsive user interfaces requires understanding the distinct roles and behaviors of props and state.
+
+### Props: Immutable Configurations
+Props are read-only variables passed from a parent component to a child component. They are immutable: a child component should never modify the props it receives. If the data needs to change, the parent component must update its state and pass the new values down. This establishes a predictable, unidirectional data flow.
+
+### State: Local and Mutable
+State represents data that can change over time and is private to the component that defines it. Unlike props, state is mutable, but it must only be updated using the designated state setter function (e.g. `setState` or the setter returned by `useState`). Updating the state schedules a re-render of the component and all its children.
+
+### Unidirectional Data Flow
+In React, data flows downward from parent to child components. If multiple sibling components need access to the same state data, the state should be "lifted up" to their closest common ancestor. The ancestor component then passes the state down as props, along with callback functions that the children can trigger to request updates to the state.
+
+---
+
+## Code Example
+
+Here is a practical React component illustrating how props are passed down, how local state is updated, and how functional updates work:
+
+```tsx
+import React, { useState } from 'react';
+
+interface QuantitySelectorProps {
+  initialCount?: number;
+  maxLimit: number;
+  onQuantityChange: (newCount: number) => void;
+}
+
+export function QuantitySelector({
+  initialCount = 1,
+  maxLimit,
+  onQuantityChange,
+}: QuantitySelectorProps) {
+  // Declare local state for the quantity count
+  const [count, setCount] = useState<number>(initialCount);
+
+  const handleIncrement = () => {
+    if (count < maxLimit) {
+      // Use functional state updates to prevent stale state closure bugs
+      setCount((prevCount) => {
+        const nextCount = prevCount + 1;
+        onQuantityChange(nextCount);
+        return nextCount;
+      });
+    }
+  };
+
+  const handleDecrement = () => {
+    if (count > 1) {
+      setCount((prevCount) => {
+        const nextCount = prevCount - 1;
+        onQuantityChange(nextCount);
+        return nextCount;
+      });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-4 p-4 bg-zinc-900 border border-zinc-800 rounded-lg max-w-sm">
+      <span className="text-sm font-semibold text-zinc-300">Quantity:</span>
+      
+      <div className="flex items-center border border-zinc-700 rounded-md overflow-hidden bg-zinc-950">
+        <button
+          onClick={handleDecrement}
+          disabled={count <= 1}
+          className="px-3 py-1 text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+        >
+          -
+        </button>
+        <span className="px-4 py-1 text-zinc-100 font-mono font-bold">{count}</span>
+        <button
+          onClick={handleIncrement}
+          disabled={count >= maxLimit}
+          className="px-3 py-1 text-zinc-300 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+*   **Keep State Minimal**: Never duplicate data. If a value can be computed or derived directly from props or existing state, do not store it in state.
+*   **Lift State Up**: Move shared state to the closest common parent component rather than trying to sync state between child components.
+*   **Use Functional Updates**: Always use functional state setters (e.g. `setCount(prev => prev + 1)`) when the new state depends on the previous state.
+*   **Set Explicit Initial States**: Initialize state variables with appropriate default values (like `""` instead of `undefined` for controlled input fields).
+
+---
+
+## Common Mistakes
+
+*   **Mutating state directly**: Modifying state variables directly (e.g., `count = count + 1` or `myObject.key = value`), which does not trigger a re-render and leads to silent bugs.
+*   **Assuming state updates are immediate**: Reading a state variable immediately after calling its setter, forgetting that state updates are batched and processed asynchronously.
+*   **Storing static props in state**: Storing props directly in state without needing to modify them locally, which breaks reactivity if the parent's props update.
+
+<Callout type="note" title="Asynchronous State Batching">
+  React batches state updates inside event handlers to optimize rendering performance. This means state values will not reflect their new values immediately after the setter call within the same function block.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Props are immutable parameters passed down the component tree.
+*   State is mutable local storage owned and managed by the component.
+*   Modifying state triggers the React Virtual DOM diffing and re-render cycles.
+*   Always use functional update signatures when calculating state based on prior values.

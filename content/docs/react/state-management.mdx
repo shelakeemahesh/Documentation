@@ -5,10 +5,137 @@ description: "Learn about State Management (Redux Toolkit / Zustand) in our comp
 
 # State Management (Redux Toolkit / Zustand)
 
-Welcome to the section on **State Management (Redux Toolkit / Zustand)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for State Management (Redux Toolkit / Zustand).
+State management libraries serve as external, centralized databases of client-side application state. As applications grow in size, managing data across disconnected components using React props or Context becomes difficult. Modern tools like Redux Toolkit (RTK) and Zustand solve this by providing centralized, reactive data stores that decouple application logic from UI components.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Choosing the right state management approach depends on your architectural scale and team structure.
+
+### Why External Stores Are Needed
+React Context is designed for low-frequency global settings (like themes). When used for highly dynamic state, every state update forces all components consuming the context to re-render. Global stores bypass this limitation by using custom subscription mechanisms: components only re-render if the specific slice of state they subscribe to changes.
+
+### Zustand: Simple and Unopinionated
+Zustand is a lightweight, hooks-based state management library built on the Flux architecture but without the heavy boilerplate. It uses simple closures to create a store, does not wrap your app in Context Providers, and handles async actions directly inside state definitions.
+
+### Redux Toolkit: Structured and Standardised
+Redux Toolkit (RTK) is the official, opinionated toolset for Redux development. It standardizes the Redux flow into "Slices" (which combine action creators and reducers). It integrates Immer under the hood (allowing write-like mutations that resolve to safe immutable copies) and supports powerful developer tooling (Redux DevTools).
+
+---
+
+## Code Example
+
+Here is a practical, type-safe implementation of a shopping cart store using **Zustand**, illustrating store creation, state slices, action dispatching, and selector subscriptions:
+
+```typescript
+import { create } from 'zustand';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface CartState {
+  items: CartItem[];
+  // Actions
+  addItem: (product: Omit<CartItem, 'quantity'>) => void;
+  removeItem: (id: string) => void;
+  clearCart: () => void;
+  // Computed values (getters)
+  getTotalPrice: () => number;
+}
+
+// 1. Create the store
+export const useCartStore = create<CartState>((set, get) => ({
+  items: [],
+
+  addItem: (product) => {
+    set((state) => {
+      const existingItem = state.items.find((item) => item.id === product.id);
+      
+      if (existingItem) {
+        return {
+          items: state.items.map((item) =>
+            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          ),
+        };
+      }
+      
+      return {
+        items: [...state.items, { ...product, quantity: 1 }],
+      };
+    });
+  },
+
+  removeItem: (id) => {
+    set((state) => ({
+      items: state.items.filter((item) => item.id !== id),
+    }));
+  },
+
+  clearCart: () => set({ items: [] }),
+
+  getTotalPrice: () => {
+    return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+  },
+}));
+```
+
+Here is how a React component consumes the store using **selectors** to prevent unneeded re-renders:
+
+```tsx
+import React from 'react';
+import { useCartStore } from './cartStore';
+
+export function CartSummary() {
+  // Subscribe ONLY to the items length (re-renders only if list count changes)
+  const itemsCount = useCartStore((state) => state.items.length);
+  const totalPrice = useCartStore((state) => state.getTotalPrice());
+  const clearCart = useCartStore((state) => state.clearCart);
+
+  return (
+    <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg max-w-sm">
+      <h3 className="font-bold text-zinc-100 mb-2">Cart Summary</h3>
+      <p className="text-sm text-zinc-400">Total Items: <span className="text-zinc-200 font-bold">{itemsCount}</span></p>
+      <p className="text-sm text-zinc-400 mb-4">Total Cost: <span className="text-amber-500 font-mono font-bold">${totalPrice.toFixed(2)}</span></p>
+      <button
+        onClick={clearCart}
+        className="w-full py-1.5 bg-zinc-800 text-zinc-200 rounded hover:bg-zinc-700 transition-colors"
+      >
+        Clear Cart
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+*   **Always Use Selectors**: Do not call `const state = useStore()` directly. Always pass a selector (like `const items = useStore(state => state.items)`) to subscribe component re-renders to target slices only.
+*   **Keep Actions inside the Store**: Define your mutation functions (actions) directly within the store configuration instead of writing updates inside components.
+*   **Avoid Non-Serializable Data**: Store only pure JSON objects, primitives, and arrays. Never put class instances, promises, or DOM elements in your store state.
+*   **Keep the State Flat**: Normalize complex nested data structures using IDs to make updates simpler and prevent deep clone performance issues.
+
+---
+
+## Common Mistakes
+
+*   **Subscribing to the entire store**: Destructuring values without selectors (e.g. `const { items, clearCart } = useCartStore()`), which forces the component to re-render whenever *any* state key updates.
+*   **Mutating state directly**: Trying to bypass setter functions (e.g. `state.items.push(item)`) which prevents state change detection and stops UI renders.
+*   **Duplicating local component state**: Storing local values (like modal open states or input values) in the global store when standard `useState` would be simpler.
+
+<Callout type="tip" title="Zustand vs. Redux Toolkit">
+  Choose **Zustand** for most modern React projects to minimize boilerplate and jumpstart development. Reserve **Redux Toolkit** for legacy codebases or large enterprise systems that require strict structural conventions and action-tracing logs.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Global stores separate business logic from React presentation layouts.
+*   Use state selectors to restrict component updates to active properties.
+*   Zustand offers a minimal, hooks-centric API with zero layout wrapper layers.
+*   Redux Toolkit provides an opinionated slice-based reducer pattern.

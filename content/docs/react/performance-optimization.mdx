@@ -5,10 +5,143 @@ description: "Learn about Performance Optimization (memoization, lazy loading) i
 
 # Performance Optimization (memoization, lazy loading)
 
-Welcome to the section on **Performance Optimization (memoization, lazy loading)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Performance Optimization (memoization, lazy loading).
+React performance optimization ensures that user interfaces remain smooth, responsive, and lightweight. In React, component state changes trigger re-rendering cycles. While React's Virtual DOM reconciliation engine is fast, unnecessary re-renders of complex component trees can degrade performance. Optimizing this involves strategic memoization, code-splitting, list virtualization, and state structure designs.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Optimizing rendering cycles requires understanding how React renders components and when to intercept it.
+
+### React Re-rendering Trigger Chain
+When a component's state or context changes, React re-renders that component and recursively re-renders all of its children. This occurs regardless of whether the child component's props have changed. If a child component performs heavy computations or renders a large subtree, this recursive behavior can cause UI lag.
+
+### Memoization Techniques
+*   **`React.memo`**: A higher-order component that shallowly compares props. If props have not changed between renders, React skips rendering the component and reuse the last rendered output.
+*   **`useMemo`**: Caches the return value of a computation function between renders. It is used to prevent expensive calculations from running on every single render.
+*   **`useCallback`**: Memoizes a callback function definition itself. It prevents functions from being recreated on every render, which is critical when passing functions as props to child components wrapped in `React.memo`.
+
+### Code Splitting and Lazy Loading
+By default, build tools bundle all JavaScript code into a single file. For large apps, this file becomes bloated, increasing initial page load times. Dynamic importing via `React.lazy()` allows you to split your code into separate bundles. The browser loads these bundles asynchronously only when they are needed, displaying a placeholder fallback via `Suspense` in the meantime.
+
+---
+
+## Code Example
+
+Here is a practical dashboard layout showcasing `React.memo` props comparison, `useMemo` list filtering, and `React.lazy` component dynamic imports:
+
+```tsx
+import React, { useState, useMemo, useCallback, Suspense } from 'react';
+
+// 1. Lazy load a heavy component (e.g. Charts)
+const HeavyAnalyticsChart = React.lazy(() => import('./HeavyAnalyticsChart'));
+
+interface Item {
+  id: number;
+  value: string;
+}
+
+// 2. Child component optimized with React.memo
+const ListItem = React.memo(function ListItem({
+  item,
+  onRemove,
+}: {
+  item: Item;
+  onRemove: (id: number) => void;
+}) {
+  console.log(`ListItem Rendering: ${item.id}`);
+  return (
+    <div className="flex justify-between items-center p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+      <span className="text-zinc-200">{item.value}</span>
+      <button
+        onClick={() => onRemove(item.id)}
+        className="text-xs text-rose-400 hover:text-rose-300 font-semibold"
+      >
+        Remove
+      </button>
+    </div>
+  );
+});
+
+// 3. Parent container
+export function DashboardContainer() {
+  const [items, setItems] = useState<Item[]>([
+    { id: 1, value: 'Alpha' },
+    { id: 2, value: 'Beta' },
+    { id: 3, value: 'Gamma' },
+  ]);
+  const [query, setQuery] = useState<string>('');
+  const [showChart, setShowChart] = useState<boolean>(false);
+
+  // 4. Memoize the callback to prevent recreation (critical for React.memo child)
+  const handleRemove = useCallback((id: number) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  }, []);
+
+  // 5. Memoize filtered list to prevent recalculation on unrelated states (like showChart toggle)
+  const filteredItems = useMemo(() => {
+    console.log('Running expensive filter calculation...');
+    return items.filter((item) => item.value.toLowerCase().includes(query.toLowerCase()));
+  }, [items, query]);
+
+  return (
+    <div className="space-y-6 max-w-lg">
+      <input
+        type="text"
+        placeholder="Filter items..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-100"
+      />
+
+      <div className="space-y-2">
+        {filteredItems.map((item) => (
+          <ListItem key={item.id} item={item} onRemove={handleRemove} />
+        ))}
+      </div>
+
+      <button
+        onClick={() => setShowChart(true)}
+        className="px-4 py-2 bg-amber-500 text-zinc-950 font-bold rounded hover:bg-amber-400"
+      >
+        Load Analytics Chart
+      </button>
+
+      {/* 6. Suspense boundary for lazy-loaded component */}
+      {showChart && (
+        <Suspense fallback={<div className="text-zinc-400">Loading chart script...</div>}>
+          <HeavyAnalyticsChart />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+*   **Profile Before Optimizing**: Use the React DevTools Profiler to measure component rendering times and identify actual bottlenecks before adding memoization.
+*   **Lazy Load at Route Level**: Code-split your application at the router level so that user pages (like `/admin` or `/settings`) are loaded only when requested.
+*   **Memoize Functions Passed as Props**: If a child component is wrapped in `React.memo`, ensure all callbacks passed to it are wrapped in `useCallback` to maintain reference stability.
+*   **Virtualize Large Lists**: Avoid rendering lists containing thousands of DOM nodes. Use virtualization libraries (like `react-window` or `react-virtualized`) to only render visible nodes.
+
+---
+
+## Common Mistakes
+
+*   **Overusing React.memo**: Wrapping simple, fast components in `React.memo`, which actually degrades performance due to the overhead of props comparison.
+*   **Passing unmemoized objects as props**: Wrapping a component in `React.memo` but passing inline objects (like `<Child style={{ margin: 10 }} />`), which breaks memoization because the object reference changes on every render.
+*   **Ignoring key prop instability**: Using random numbers or indices as keys in list mapping, forcing React to reconstruct DOM nodes instead of updating them.
+
+<Callout type="note" title="The React Compiler">
+  React 19 introduces the experimental React Compiler (React Forget), which automatically memoizes components, functions, and calculations at build time, reducing the need for manual `React.memo`, `useMemo`, and `useCallback` calls.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `React.memo` stops component updates if the passed props remain identical.
+*   `useMemo` caches return values, while `useCallback` caches function references.
+*   Lazy loading (`React.lazy` + `Suspense`) splits bundler output to optimize loading times.
+*   Avoid premature optimizations; profile layouts first to find actual lag bottlenecks.
