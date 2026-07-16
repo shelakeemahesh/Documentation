@@ -1,0 +1,13 @@
+{
+  "title": "Hibernate, ORM & JPA",
+  "pages": [
+    "introduction-to-orm",
+    "jpa-fundamentals",
+    "entity-mapping-relationships",
+    "hql-criteria-api",
+    "caching",
+    "transactions-locking-strategies",
+    "nplus1-problem-performance-tuning",
+    "system-design-database-access-layer-scale"
+  ]
+}

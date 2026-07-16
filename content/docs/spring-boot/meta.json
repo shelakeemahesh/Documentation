@@ -1,0 +1,16 @@
+{
+  "title": "Spring Boot",
+  "pages": [
+    "introduction-setup",
+    "spring-core-di-ioc",
+    "rest-api-development",
+    "spring-security-jwt",
+    "validation-global-exception-handling",
+    "spring-data-jpa",
+    "caching",
+    "messaging",
+    "testing",
+    "microservices-spring-cloud",
+    "system-design-building-production-grade-microservices"
+  ]
+}

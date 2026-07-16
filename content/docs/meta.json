@@ -1,0 +1,19 @@
+{
+  "title": "Full Stack Docs",
+  "pages": [
+    "getting-started",
+    "git",
+    "github",
+    "html",
+    "css",
+    "javascript",
+    "react",
+    "java",
+    "spring-boot",
+    "hibernate-orm-jpa",
+    "mysql",
+    "postgresql",
+    "docker",
+    "system-design"
+  ]
+}

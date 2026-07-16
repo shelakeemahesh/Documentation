@@ -1,0 +1,14 @@
+{
+  "title": "MySQL",
+  "pages": [
+    "introduction-setup",
+    "sql-basics",
+    "joins-subqueries",
+    "indexing",
+    "transactions-acid",
+    "normalization",
+    "query-optimization-explain",
+    "replication-sharding",
+    "system-design-scaling-mysql-high-traffic"
+  ]
+}

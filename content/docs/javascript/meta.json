@@ -1,0 +1,17 @@
+{
+  "title": "JavaScript",
+  "pages": [
+    "introduction-setup",
+    "variables-types-operators",
+    "functions-scope",
+    "closures",
+    "prototypes-classes",
+    "async-js",
+    "event-loop-concurrency-model",
+    "dom-manipulation-events",
+    "es6-features",
+    "error-handling",
+    "modules",
+    "system-design-structuring-scalable-frontend"
+  ]
+}

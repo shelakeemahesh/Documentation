@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+@theme {
+  --color-fd-primary: var(--color-amber-500);
+  --color-fd-primary-foreground: var(--color-black);
+  
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+:root {
+  scrollbar-gutter: stable;
+  --fd-layout-width: 1440px;
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* Custom styling for typography and page structure */
+.prose, .fd-prose, article {
+  max-width: 880px !important;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.75;
+}
+
+/* Code block adjustments */
+code, pre {
+  font-family: var(--font-mono) !important;
+}
+
+/* Highlight sidebar active item with amber-500 text and subtle background */
+[data-active="true"] {
+  color: var(--color-amber-500) !important;
+  font-weight: 600 !important;
+  background-color: color-mix(in srgb, var(--color-amber-500) 8%, transparent) !important;
+}
+
+/* Heading hover anchor highlight */
+h1, h2, h3, h4, h5, h6 {
+  scroll-margin-top: 5rem;
+}

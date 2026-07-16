@@ -1,0 +1,16 @@
+{
+  "title": "React",
+  "pages": [
+    "introduction-setup",
+    "jsx-components",
+    "props-state",
+    "hooks",
+    "context-api",
+    "react-router",
+    "state-management",
+    "performance-optimization",
+    "ssr-overview",
+    "testing-react-apps",
+    "system-design-architecting-large-scale-react"
+  ]
+}

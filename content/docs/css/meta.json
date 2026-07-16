@@ -1,0 +1,15 @@
+{
+  "title": "CSS",
+  "pages": [
+    "introduction-to-css",
+    "selectors-specificity",
+    "box-model",
+    "flexbox",
+    "grid",
+    "responsive-design-media-queries",
+    "animations-transitions",
+    "css-variables-theming",
+    "preprocessors",
+    "system-design-scalable-css-architecture"
+  ]
+}

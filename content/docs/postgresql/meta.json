@@ -1,0 +1,13 @@
+{
+  "title": "PostgreSQL",
+  "pages": [
+    "introduction-setup",
+    "advanced-data-types",
+    "indexing-strategies",
+    "window-functions",
+    "full-text-search",
+    "partitioning",
+    "replication",
+    "system-design-postgresql-scale"
+  ]
+}

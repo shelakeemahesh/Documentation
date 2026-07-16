@@ -1,0 +1,14 @@
+{
+  "title": "System Design",
+  "pages": [
+    "fundamentals",
+    "load-balancing",
+    "caching-strategies",
+    "database-sharding-replication",
+    "message-queues",
+    "microservices-vs-monolith",
+    "case-study-url-shortener",
+    "case-study-rate-limiter",
+    "case-study-real-time-chat-app"
+  ]
+}

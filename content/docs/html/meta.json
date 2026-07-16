@@ -1,0 +1,14 @@
+{
+  "title": "HTML",
+  "pages": [
+    "introduction-to-html",
+    "document-structure-boilerplate",
+    "semantic-html",
+    "forms-validation",
+    "tables",
+    "media-elements",
+    "accessibility",
+    "html5-apis",
+    "system-design-accessible-seo-friendly-pages"
+  ]
+}

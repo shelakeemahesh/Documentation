@@ -1,0 +1,14 @@
+{
+  "title": "Java",
+  "pages": [
+    "introduction-setup",
+    "oop-concepts",
+    "collections-framework",
+    "exception-handling",
+    "generics",
+    "streams-lambda-expressions",
+    "multithreading-concurrency",
+    "java-memory-model-gc",
+    "system-design-scalable-java-backend"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Git",
+  "pages": [
+    "introduction-to-git",
+    "git-installation-setup",
+    "basic-commands",
+    "branching-merging",
+    "stash-rebase",
+    "undo-changes",
+    "resolving-merge-conflicts",
+    "system-design-git-workflow-best-practices"
+  ]
+}

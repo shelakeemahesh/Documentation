@@ -1,0 +1,12 @@
+{
+  "title": "GitHub",
+  "pages": [
+    "introduction-to-github",
+    "ssh-key-setup-authentication",
+    "pull-requests-code-reviews",
+    "github-actions-cicd-basics",
+    "forking-open-source-contribution",
+    "managing-releases-tagging",
+    "system-design-scaling-collaborative-repositories"
+  ]
+}
