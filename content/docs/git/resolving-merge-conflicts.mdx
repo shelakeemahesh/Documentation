@@ -1,14 +1,63 @@
 ---
 title: "Resolving Merge Conflicts"
-description: "Learn about Resolving Merge Conflicts in our comprehensive Full Stack Guide."
+description: "Understand conflict markers, how Git flags concurrent file edits, and manual resolution processes."
 ---
 
-# Resolving Merge Conflicts
+# Resolving Merge Conflicts ⚡
 
-Welcome to the section on **Resolving Merge Conflicts**.
+A merge conflict happens when Git cannot automatically resolve differences in code. This usually occurs when two developers modify the exact same lines of a file on different branches, or when one developer deletes a file that another is modifying.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Resolving Merge Conflicts.
+## What a Merge Conflict Looks Like
 
-## Core Concepts
+When Git detects a conflict during a merge, it stops the merge process, leaves the files in conflict, and prompts you to resolve them. If you open a conflicted file, you will see **conflict markers**:
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+```html
+<<<<<<< HEAD
+const apiUrl = "https://api.production.com";
+=======
+const apiUrl = "https://api.staging.dev";
+>>>>>>> feature-env
+```
+
+### Deciphering the Markers:
+-   `<<<<<<< HEAD`: The start of the changes from the branch you are merging **into** (active checkout branch).
+-   `=======`: The divider separating the conflicting changes.
+-   `>>>>>>> feature-env`: The end of the changes from the branch you are merging **from** (`feature-env` in this case).
+
+---
+
+## Step-by-Step Resolution
+
+### Step 1: Locate the conflicted files
+Run `git status` to see the list of unmerged paths:
+```bash
+git status
+# Under "Unmerged paths":
+#   both modified:   config.js
+```
+
+### Step 2: Edit files and pick changes
+Open the conflicted files in your editor (such as VS Code, which offers click-to-accept helpers like "Accept Current Change" or "Accept Incoming Change"). Edit the file manually to keep the desired code and **remove all conflict markers** (`<<<<<<<`, `=======`, `>>>>>>>`).
+
+### Step 3: Stage the resolved files
+Mark conflicts as resolved by staging the files:
+```bash
+git add config.js
+```
+
+### Step 4: Finalize the merge commit
+Complete the merge with a standard commit command:
+```bash
+git commit -m "merge: resolve API URL configuration conflict"
+```
+
+---
+
+## Aborting a Merge
+
+If you get stuck, make a mistake, or want to abort the merge and return your repository to the state it was in before you ran `git merge`:
+
+```bash
+git merge --abort
+```
+This safely discards the merge state and restores your checkout branch.

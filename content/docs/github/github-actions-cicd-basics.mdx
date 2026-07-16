@@ -1,14 +1,67 @@
 ---
 title: "GitHub Actions & CI/CD Basics"
-description: "Learn about GitHub Actions & CI/CD Basics in our comprehensive Full Stack Guide."
+description: "Learn how to build automation pipelines using GitHub Actions workflows, jobs, and runners."
 ---
 
-# GitHub Actions & CI/CD Basics
+# GitHub Actions & CI/CD Basics 🚀
 
-Welcome to the section on **GitHub Actions & CI/CD Basics**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for GitHub Actions & CI/CD Basics.
+GitHub Actions is an integrated Continuous Integration and Continuous Deployment (CI/CD) platform that lets you automate your build, test, and deployment pipelines directly from your GitHub repositories.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+-   **Workflow**: An automated procedure added to your repository. Workflows are defined by a YAML file in the `.github/workflows/` directory.
+-   **Events**: Triggers that start a workflow (e.g., `push`, `pull_request`, or `release`).
+-   **Jobs**: A set of steps that execute on the same runner. Jobs run in parallel by default, but can depend on other jobs.
+-   **Steps**: Individual tasks that run commands or actions.
+-   **Actions**: Reusable applications or scripts (e.g. `actions/checkout` to fetch your code).
+-   **Runner**: The virtual machine (hosted by GitHub or self-hosted) that executes the job.
+
+---
+
+## Writing Your First Workflow
+
+To create a workflow, write a YAML file under `.github/workflows/ci.yml`. This example runs standard tests and checks TypeScript compiler flags every time a developer pushes code or opens a PR to `main`:
+
+```yaml
+name: Continuous Integration
+
+# 1. Triggers (Events)
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# 2. Automation Tasks (Jobs)
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Runner OS
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run build checks
+      - name: Verify build compilation
+        run: npm run build
+
+      # Step 5: Execute unit tests
+      - name: Run test suite
+        run: npm test
+```
+
+<Callout type="tip" title="GitHub Actions Marketplace">
+  You don't need to write every task from scratch. The GitHub Marketplace contains thousands of pre-built actions to configure setups (like Java JDK, Docker registry logins, AWS deploys, Slack notifications, and code coverage reporting).
+</Callout>

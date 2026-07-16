@@ -1,14 +1,76 @@
 ---
 title: "System Design: Scaling Collaborative Repositories"
-description: "Learn about System Design: Scaling Collaborative Repositories in our comprehensive Full Stack Guide."
+description: "Explore Monorepo vs Polyrepo architectures, Git Large File Storage (LFS), sparse checkouts, and CODEOWNERS policies."
 ---
 
-# System Design: Scaling Collaborative Repositories
+# System Design: Scaling Repositories 🗃️
 
-Welcome to the section on **System Design: Scaling Collaborative Repositories**.
+As engineering organizations grow, the size of codebases, the volume of assets, and the number of concurrent committers scale exponentially. Managing these requires architectural decisions about repository structures and performance optimization flags.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for System Design: Scaling Collaborative Repositories.
+## Monorepo vs. Polyrepo (Multirepo)
 
-## Core Concepts
+| Dimension | Monorepo (Single Large Repo) | Polyrepo (Many Separate Repos) |
+| :--- | :--- | :--- |
+| **Code Sharing** | Easy (direct imports within folder tree) | Hard (requires library publishing) |
+| **Dependency Sync** | Automatic (everyone uses same version) | Complex (version mismatches across apps) |
+| **CI/CD Speed** | Slow (requires selective build caches) | Fast (independent small pipelines) |
+| **Tooling Burden** | High (requires advanced build systems like Bazel) | Low (standard tools work out of the box) |
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+---
+
+## Handling Large Assets: Git LFS
+
+Git is designed for text files. Staging large binary files (images, audio, datasets, or 3D models) bloats the repository size because Git retains a copy of every revision.
+
+**Git Large File Storage (LFS)** replaces large files with tiny pointer files inside Git, while storing the actual file content on an external server (like AWS S3 or GitHub servers).
+
+```bash
+# Initialize Git LFS
+git lfs install
+
+# Track all PDF files
+git lfs track "*.pdf"
+
+# View active tracking patterns
+git lfs status
+```
+
+---
+
+## Reducing Local Checkout Footprints
+
+For massive codebases, downloading the entire commit history and folder tree is inefficient.
+
+### 1. Shallow Clone
+Download only the most recent commits, ignoring the historical timeline:
+```bash
+git clone --depth 1 https://github.com/large/project.git
+```
+
+### 2. Sparse Checkout
+Instruct Git to only download specific subfolders of the repository, ignoring the rest:
+```bash
+git sparse-checkout init --cone
+git sparse-checkout set app/frontend
+```
+
+---
+
+## Collaborative Governance: CODEOWNERS
+
+In large teams, you want to automatically route code reviews to the correct teams based on the files modified. You can define a `CODEOWNERS` file under the `.github/` folder:
+
+```text
+# .github/CODEOWNERS
+
+# Every file is reviewed by the core dev team by default
+*       @org/core-devs
+
+# JavaScript and TS edits must be approved by the Frontend team
+*.js    @org/frontend-team
+*.tsx   @org/frontend-team
+
+# Configs under database/ must be approved by DBAs
+/database/   @org/dba-leads
+```
+When a PR modifies files matching these patterns, GitHub automatically registers the designated team as a required reviewer.

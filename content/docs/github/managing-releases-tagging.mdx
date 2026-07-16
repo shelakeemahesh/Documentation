@@ -1,14 +1,61 @@
 ---
 title: "Managing Releases & Tagging"
-description: "Learn about Managing Releases & Tagging in our comprehensive Full Stack Guide."
+description: "Learn how to use Git tags, understand Semantic Versioning (SemVer), and publish releases on GitHub."
 ---
 
-# Managing Releases & Tagging
+# Managing Releases & Tagging 🏷️
 
-Welcome to the section on **Managing Releases & Tagging**.
+In software engineering, marking specific points in history as important (typically release versions like `v1.0.0`) is handled by Git tagging. GitHub builds upon this by allowing you to create releases that attach changelogs and compiled distribution binaries.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Managing Releases & Tagging.
+## Git Tagging Fundamentals
 
-## Core Concepts
+Git supports two types of tags: **Lightweight** and **Annotated**.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### 1. Lightweight Tags
+A lightweight tag is just a pointer to a specific commit—similar to a branch, but it does not move:
+```bash
+git tag v1.0.0-lw
+```
+
+### 2. Annotated Tags (Recommended)
+Annotated tags are stored as full objects in the Git database. They contain the tagging date, tagger name, email, GPG signature, and a tagging message:
+```bash
+git tag -a v1.0.0 -m "Release version 1.0.0 production deployment"
+```
+
+### Viewing and Sharing Tags
+```bash
+# List all tags
+git tag
+
+# View details of a specific tag
+git show v1.0.0
+
+# Tags are not pushed automatically. You must push tags explicitly:
+git push origin v1.0.0
+
+# Push all local tags at once
+git push origin --tags
+```
+
+---
+
+## Semantic Versioning (SemVer)
+
+Most release versioning follows Semantic Versioning rules. A version number is formatted as `MAJOR.MINOR.PATCH` (e.g. `1.2.4`):
+
+1.  **MAJOR version**: Incremented when you make incompatible, breaking API changes.
+2.  **MINOR version**: Incremented when you add functionality in a backwards-compatible manner.
+3.  **PATCH version**: Incremented when you make backwards-compatible bug fixes.
+
+---
+
+## Creating a GitHub Release
+
+Once you have pushed a tag to GitHub, you can create a formal **Release**:
+1.  On your GitHub repository homepage, click **Releases** in the right-hand sidebar.
+2.  Click **Draft a new release**.
+3.  Choose your tag (e.g. `v1.0.0`).
+4.  Write a Release Title and describe the changes (GitHub can auto-generate release notes comparing commits since the last release).
+5.  Drag-and-drop any binary release assets (like compiled `.jar`, `.zip`, `.dmg`, or `.exe` files) into the binaries area.
+6.  Click **Publish release**.

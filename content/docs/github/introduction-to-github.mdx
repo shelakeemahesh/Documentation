@@ -1,14 +1,44 @@
 ---
 title: "Introduction to GitHub"
-description: "Learn about Introduction to GitHub in our comprehensive Full Stack Guide."
+description: "Understand the differences between Git and GitHub, and explore the core collaboration features of GitHub."
 ---
 
-# Introduction to GitHub
+# Introduction to GitHub 🐙
 
-Welcome to the section on **Introduction to GitHub**.
+While Git is a local version control system that tracks file changes on your computer, **GitHub** is a cloud-based platform built on top of Git that hosts repositories, facilitates code reviews, automates tests, and manages team workflows.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction to GitHub.
+## Git vs. GitHub: Key Differences
 
-## Core Concepts
+| Dimension | Git | GitHub |
+| :--- | :--- | :--- |
+| **Type** | Local software utility | Cloud-hosted platform |
+| **Interface** | Command Line (CLI) / Local GUI | Web Browser interface |
+| **Core Purpose**| Track files and branch snapshots | Host remote repositories & facilitate collaboration |
+| **Hosting** | Local disk | Remote servers (hosted by Microsoft) |
+| **Additional Features** | None (pure VCS) | CI/CD, PRs, Issues, Projects, Releases, Wiki |
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+---
+
+## Core Collaboration Concepts
+
+GitHub extends Git functionality with a suite of features built for developer collaboration:
+
+### 1. Remote Repositories (Remotes)
+A remote repository is a copy of your project hosted on GitHub. You link your local repository to GitHub by configuring a remote:
+```bash
+# Link local repository to GitHub remote
+git remote add origin https://github.com/username/repo.git
+
+# Verify link
+git remote -v
+```
+
+### 2. Issues & Discussions
+GitHub provides integrated project management boards. Issues are used to track bugs, task items, and feature requests. Discussions serve as open forums for general chat and brainstorming.
+
+### 3. Pull Requests (PRs)
+Pull Requests let you propose changes to a project repository. Once a developer submits a PR, team members can review, comment, run tests, and merge the code.
+
+<Callout type="note" title="GitHub Enterprise & GitHub.com">
+  GitHub is available as a free/paid public service (GitHub.com) and as GitHub Enterprise for corporate clients who require private networking, security integration, and self-hosted instances.
+</Callout>

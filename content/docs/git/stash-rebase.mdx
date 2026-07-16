@@ -1,14 +1,83 @@
 ---
 title: "Stash & Rebase"
-description: "Learn about Stash & Rebase in our comprehensive Full Stack Guide."
+description: "Master stashing temporary work and rebasing commits to maintain a clean linear project history."
 ---
 
-# Stash & Rebase
+# Stash & Rebase 📦
 
-Welcome to the section on **Stash & Rebase**.
+Git provides advanced tools to save unfinished workspace changes quickly and rewrite commit history to maintain a clean linear progression.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Stash & Rebase.
+## Stashing: Saving Temporary Work
 
-## Core Concepts
+Sometimes you need to switch branches but aren't ready to commit your half-written code. `git stash` takes your uncommitted changes (both staged and unstaged) and saves them on a stack, cleaning your working directory.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+```bash
+# Save active changes to the stash stack
+git stash
+
+# Save with a custom descriptive message
+git stash save "WIP: login page validation styles"
+
+# List all saved stashes
+git stash list
+```
+
+### Retrieving Stashed Changes
+```bash
+# Apply the latest stash and REMOVE it from the stack
+git stash pop
+
+# Apply a specific stash (by index) without removing it
+git stash apply stash@{0}
+
+# Delete a specific stash
+git stash drop stash@{0}
+
+# Delete all stashes
+git stash clear
+```
+
+---
+
+## Rebasing: Linearizing History
+
+Rebasing is the process of moving or combining a sequence of commits to a new base commit. Instead of combining branches via a merge commit, rebasing rewrites the project history by replay commits on top of another branch.
+
+```bash
+# Rebase current branch on top of main
+git switch feature-auth
+git rebase main
+```
+
+```mermaid
+graph TD
+    subgraph Merge History
+        A[C1] --> B[C2]
+        B --> C[C3 / Main]
+        B --> D[C4 / Feature]
+        C --> E[Merge Commit]
+        D --> E
+    end
+    subgraph Rebase History
+        A2[C1] --> B2[C2]
+        B2 --> C2[C3 / Main]
+        C2 --> D2[C4' / Feature replayed]
+    end
+```
+
+### Interactive Rebase: Cleaning Commits
+You can use interactive rebasing (`-i`) to squash, rename, or delete past commits before pushing them to shared repositories:
+
+```bash
+# Rebase the last 4 commits on current branch
+git rebase -i HEAD~4
+```
+This opens your text editor with options:
+- `pick`: keep the commit.
+- `reword`: change the commit message.
+- `edit`: stop and modify files.
+- `squash`: merge commit into the previous one.
+
+<Callout type="danger" title="The Golden Rule of Rebasing">
+  **Never rebase commits that you have pushed to a public repository.** Rebasing rewrites commit SHA hashes. If you rebase public commits, other developers who pulled your commits will have divergent histories, resulting in complex and painful merge loops.
+</Callout>

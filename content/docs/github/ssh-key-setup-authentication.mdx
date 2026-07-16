@@ -1,14 +1,74 @@
 ---
 title: "SSH Key Setup & Authentication"
-description: "Learn about SSH Key Setup & Authentication in our comprehensive Full Stack Guide."
+description: "Configure secure authentication to GitHub using SSH keys, avoiding password prompts during push and pull."
 ---
 
-# SSH Key Setup & Authentication
+# SSH Key Setup & Authentication 🔑
 
-Welcome to the section on **SSH Key Setup & Authentication**.
+To push code to GitHub securely and avoid entering your username and personal access tokens every single time, you should configure SSH (Secure Shell) authentication.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for SSH Key Setup & Authentication.
+## Step 1: Generate a New SSH Key
+Open your terminal (macOS/Linux) or Git Bash (Windows) and run:
 
-## Core Concepts
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+-   `-t ed25519`: Specifies the modern, secure Ed25519 algorithm.
+-   `-C`: Adds your email as a label comment inside the key.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Press **Enter** to accept the default file location (`~/.ssh/id_ed25519`). When prompted, enter a secure passphrase (optional but recommended to secure the key).
+
+---
+
+## Step 2: Add Your Key to the SSH Agent
+The SSH agent manages your keys and passphrases in the background.
+
+```bash
+# Start the agent
+eval "$(ssh-agent -s)"
+
+# Register your private key
+ssh-add ~/.ssh/id_ed25519
+```
+
+---
+
+## Step 3: Add the Public Key to GitHub
+
+### 1. Copy the public key to clipboard:
+```bash
+# macOS
+pbcopy < ~/.ssh/id_ed25519.pub
+
+# Linux (requires xclip)
+xclip -sel clip < ~/.ssh/id_ed25519.pub
+
+# Windows (Git Bash)
+cat ~/.ssh/id_ed25519.pub | clip
+```
+
+### 2. Save it on GitHub:
+1.  Go to GitHub, click your profile picture, and select **Settings**.
+2.  Click **SSH and GPG keys** in the sidebar.
+3.  Click **New SSH key**, add a descriptive Title (e.g., "Work Laptop"), and paste the copied key into the **Key** text area.
+4.  Click **Add SSH key**.
+
+---
+
+## Step 4: Test Your Connection
+
+To confirm that the key works:
+```bash
+ssh -T git@github.com
+```
+You should see a message like:
+```text
+Hi username! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+<Callout type="warning" title="Cloning with SSH vs. HTTPS">
+  If you clone a repo using `https://github.com/...`, Git will continue prompting you for credentials. Ensure your remote URL is configured to use SSH syntax:
+  ```bash
+  git remote set-url origin git@github.com:username/repo.git
+  ```
+</Callout>

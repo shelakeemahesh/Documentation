@@ -1,14 +1,66 @@
 ---
-title: "Undo Changes (reset, revert, checkout)"
-description: "Learn about Undo Changes (reset, revert, checkout) in our comprehensive Full Stack Guide."
+title: "Undo Changes"
+description: "Learn how to revert working directory changes, unstage files, amend commits, and reset history."
 ---
 
-# Undo Changes (reset, revert, checkout)
+# Undoing Changes in Git 🔄
 
-Welcome to the section on **Undo Changes (reset, revert, checkout)**.
+Git provides full control to roll back mistakes. Depending on whether your changes are unstaged, staged, committed locally, or pushed remotely, you must choose the appropriate undo mechanism.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Undo Changes (reset, revert, checkout).
+## 1. Discarding Unstaged Changes (Working Directory)
+If you made edits to a file but want to discard them and start fresh from the last committed state:
 
-## Core Concepts
+```bash
+# Modern command
+git restore app.js
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+# Legacy command
+git checkout -- app.js
+```
+
+## 2. Unstaging a File (Staging Area)
+If you staged a file (`git add`) but want to remove it from the index without losing your file changes:
+
+```bash
+# Modern command
+git restore --staged app.js
+
+# Legacy command
+git reset HEAD app.js
+```
+
+## 3. Amending the Last Commit
+If you committed but forgot to add a file, or made a typo in the commit message:
+
+```bash
+# Stage the forgotten file
+git add forgotten_file.js
+
+# Overwrite the last commit in place
+git commit --amend -m "feat: correct implementation and add missing schema"
+```
+
+---
+
+## 4. Resetting Commits (git reset)
+`git reset` moves the current branch pointer backward in time. There are three modes:
+
+| Command | Working Directory | Staging Area | Commit Database |
+| :--- | :--- | :--- | :--- |
+| **`git reset --soft HEAD~1`** | Preserved | Preserved | Removed last commit |
+| **`git reset --mixed HEAD~1`**| Preserved | Cleared (unstaged) | Removed last commit |
+| **`git reset --hard HEAD~1`** | **Destroyed** | **Destroyed** | Removed last commit |
+
+<Callout type="danger" title="Hard Reset Danger">
+  `git reset --hard` is one of the few destructive commands in Git. Any uncommitted changes in your working directory will be permanently erased.
+</Callout>
+
+---
+
+## 5. Reverting Commits (git revert)
+If your commits are already pushed to a remote server, using `git reset` will cause divergent histories. Instead, use `git revert`:
+
+```bash
+git revert c4f89d3
+```
+This command creates a **new commit** that introduces the exact opposite changes of the target commit, safely rolling back changes without erasing history.

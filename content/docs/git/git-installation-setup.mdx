@@ -1,14 +1,71 @@
 ---
 title: "Git Installation & Setup"
-description: "Learn about Git Installation & Setup in our comprehensive Full Stack Guide."
+description: "Learn how to install Git on your platform and set up your global configuration profiles."
 ---
 
-# Git Installation & Setup
+# Git Installation & Setup ⚙️
 
-Welcome to the section on **Git Installation & Setup**.
+Before you can start tracking code, you need to install Git on your development machine and configure your basic developer metadata.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Git Installation & Setup.
+## Installing Git
 
-## Core Concepts
+### 🍎 macOS
+The easiest way is to use **Homebrew**:
+```bash
+brew install git
+```
+Alternatively, running any git command (like `git --version`) in terminal for the first time will prompt you to install Apple's Command Line Tools.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### 🐧 Linux
+Use your distribution's default package manager:
+```bash
+# Ubuntu / Debian
+sudo apt update
+sudo apt install git
+
+# Fedora / CentOS
+sudo dnf install git
+```
+
+### 🪟 Windows
+Download and install the official [Git for Windows installer](https://git-scm.com/download/win). This installs Git, **Git Bash** (a Unix-like terminal emulator), and the Git GUI client.
+
+---
+
+## Initial Configuration
+
+Git includes a tool called `git config` that lets you get and set configuration variables that control how Git looks and operates.
+
+### 1. Identify Yourself (Name & Email)
+Every Git commit uses this information to track authorship. Set these globally so you only have to do it once:
+
+```bash
+git config --global user.name "John Doe"
+git config --global user.email "johndoe@example.com"
+```
+
+<Callout type="warning" title="Commit Verification">
+  Ensure the email address matches the verified email in your GitHub/GitLab account to properly link your commits to your profile and green contribution squares.
+</Callout>
+
+### 2. Configure Your Default Editor
+By default, Git uses your system's default editor (usually Vi or Vim) for typing commit messages. If you prefer Visual Studio Code or Nano, configure it like this:
+
+```bash
+# Set VS Code as default editor
+git config --global core.editor "code --wait"
+
+# Set Nano as default editor
+git config --global core.editor "nano"
+```
+
+### 3. Check Your Settings
+Verify your configurations by listing all active variables:
+
+```bash
+git config --list
+```
+To check a specific config key:
+```bash
+git config user.name
+```

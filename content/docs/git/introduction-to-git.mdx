@@ -1,14 +1,50 @@
 ---
 title: "Introduction to Git"
-description: "Learn about Introduction to Git in our comprehensive Full Stack Guide."
+description: "Learn the fundamentals of version control, distributed tracking systems, and how Git manages snapshots."
 ---
 
-# Introduction to Git
+# Introduction to Git 🌳
 
-Welcome to the section on **Introduction to Git**.
+Version control is the system that records changes to files over time so you can recall specific versions later. Without version control, collaborating on software would involve manual file naming conventions (like `code_v2_final.zip`), leading to absolute chaos.
 
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction to Git.
+## Centralized vs. Distributed Version Control
 
-## Core Concepts
+Before Git, many teams used Centralized Version Control Systems (CVCS) like SVN or Perforce. Today, Distributed Version Control Systems (DVCS) like Git are the industry standard.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+| Feature | Centralized (CVCS) | Distributed (DVCS / Git) |
+| :--- | :--- | :--- |
+| **Storage Location** | Single central server | Every client has a full copy of the repository |
+| **Offline Capability**| Extremely limited | Full operations (commit, log, branch) work offline |
+| **Speed** | Slow (requires network roundtrips) | Blazing fast (local operations) |
+| **Risk Profile** | Server crash = data loss | Redundant backups on every machine |
+
+---
+
+## How Git Thinks: Snapshots, Not Differences
+
+The major difference between Git and other version control systems (like SVN) is how Git stores its data. Most other systems store information as a list of file-based changes (often called delta-based version control).
+
+Git thinks of its data more like a stream of **snapshots**. Every time you commit, Git takes a picture of what all your files look like at that moment and stores a reference to that snapshot. If a file has not changed, Git doesn't store the file again; it simply links to the previous identical file it has already stored.
+
+```mermaid
+graph TD
+    subgraph Commit 1
+        C1F1[File A v1]
+        C1F2[File B v1]
+    end
+    subgraph Commit 2
+        C2F1[File A v2]
+        C2F2[File B v1 - Link]
+        C2F3[File C v1]
+    end
+    subgraph Commit 3
+        C3F1[File A v2 - Link]
+        C3F2[File B v2]
+        C3F3[File C v2]
+    end
+    Commit 1 --> Commit 2 --> Commit 3
+```
+
+<Callout type="note" title="Everything is SHA-1 Hash Value">
+  Everything in Git is checksummed before it is stored and is then referred to by that checksum. Git uses SHA-1 hashes (a 40-character hexadecimal string) to identify commits, files, and directory states. This makes it impossible to change the contents of any file without Git knowing about it.
+</Callout>
