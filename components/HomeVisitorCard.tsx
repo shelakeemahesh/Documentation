@@ -24,7 +24,7 @@ export function HomeVisitorCard() {
       })
       .then((data) => {
         if (data && typeof data.value === 'number') {
-          const target = data.value;
+          const target = data.value + 5800; // Base offset of 5.8K visits
           setCount(target);
           setLoading(false);
 

@@ -19,7 +19,7 @@ export function VisitorCounter() {
       .then((res) => res.json())
       .then((data) => {
         if (data && typeof data.count === 'number') {
-          setCount(data.count);
+          setCount(data.count + 5800); // Base offset of 5.8K visits
         }
       })
       .catch((err) => {
