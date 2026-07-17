@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Cpu, Database, Layout, Server, Terminal, GitBranch, GitPullRequest } from 'lucide-react';
 import React from 'react';
+import { HomeVisitorCard } from '@/components/HomeVisitorCard';
 
 const categories = [
   {
@@ -97,6 +98,27 @@ export default function HomePage() {
             >
               Browse System Design
             </Link>
+          </div>
+
+          {/* Stats Row */}
+          <div className="mt-16 grid gap-6 grid-cols-1 sm:grid-cols-3 max-w-3xl mx-auto text-left">
+            <div className="flex flex-col p-6 rounded-2xl border border-zinc-900 bg-zinc-900/20 backdrop-blur-sm">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-500 mb-4">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <div className="text-3xl font-extrabold tracking-tight text-zinc-100">8</div>
+              <div className="text-sm text-zinc-400 mt-1">Chapters</div>
+            </div>
+
+            <div className="flex flex-col p-6 rounded-2xl border border-zinc-900 bg-zinc-900/20 backdrop-blur-sm">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl border border-orange-500/20 bg-orange-500/10 text-orange-500 mb-4">
+                <Cpu className="h-6 w-6" />
+              </div>
+              <div className="text-3xl font-extrabold tracking-tight text-zinc-100">95</div>
+              <div className="text-sm text-zinc-400 mt-1">Lessons</div>
+            </div>
+
+            <HomeVisitorCard />
           </div>
         </div>
 
