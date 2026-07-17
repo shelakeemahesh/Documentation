@@ -1,14 +1,85 @@
 ---
-title: "Caching (Redis)"
-description: "Learn about Caching (Redis) in our comprehensive Full Stack Guide."
+title: "Caching"
+description: "Optimize API response latency in Spring Boot using cache abstractions and Redis."
 ---
 
-# Caching (Redis)
+# Caching
 
-Welcome to the section on **Caching (Redis)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Caching (Redis).
+Caching is the process of storing copies of data in temporary, high-speed storage memory (like RAM) to serve future requests faster. In Spring Boot, caching abstractions optimize response latency and reduce load on primary databases.
 
 ## Core Concepts
+Understanding cache annotations and data sync structures is key to caching design.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### The Spring Cache Abstraction
+Spring provides a unified caching abstraction that can be applied to methods, decoupling caching logic from the cache provider (like Redis or Caffeine). Annotations include:
+-   **`@Cacheable`**: Caches the method return value based on method parameters, bypassing execution on future calls if the key exists.
+-   **`@CacheEvict`**: Removes entries from the cache when data is updated or deleted, preventing stale data.
+-   **`@CachePut`**: Updates the cache with the new method return value without bypassing method execution.
+
+### Cache Providers: Local vs. Distributed
+-   **Local Cache (Caffeine, Ehcache)**: Stores data in the JVM heap of the active instance. Fast, but does not scale across multiple app instances.
+-   **Distributed Cache (Redis)**: Stores data in a centralized, external memory store. Ideal for microservices, keeping cache data synchronized across all instances.
+
+---
+
+## Code Example
+
+Here is an implementation of cache mapping on a product service class:
+
+```java
+package com.example.demo.service;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+record Product(String id, String name) {}
+
+@Service
+public class ProductService {
+
+    // Cache return value in "products" namespace, using productId as key
+    @Cacheable(value = "products", key = "#id")
+    public Product getProductById(String id) {
+        // Simulating slow database read operation
+        try { Thread.sleep(2000); } catch (InterruptedException e) {}
+        return new Product(id, "Scalable API Server");
+    }
+
+    // Evict cache entry when product is updated to prevent stale data
+    @CacheEvict(value = "products", key = "#product.id")
+    public void updateProduct(Product product) {
+        System.out.println("Updating product database record...");
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use TTL (Time-to-Live)**: Always configure a TTL on cache keys to ensure stale data is eventually evited even if evict triggers fail.
+*   **Cache Read-Heavy, Write-Rare Data**: Focus caching on static, frequently queried data (like configs or product catalogs) rather than high-frequency transaction updates.
+*   **Avoid Caching Large Object Trees**: Cache flat DTO objects instead of deep entity graphs to minimize memory footprint in Redis.
+*   **Use Conditional Caching**: Use the `unless` attribute (e.g. `@Cacheable(unless="#result == null")`) to prevent caching empty or null values.
+
+---
+
+## Common Mistakes
+
+*   **Ignoring cache eviction on updates**: Modifying database records without calling `@CacheEvict` or `@CachePut`, leading to stale data bugs.
+*   **Internal method calls bypassing proxy caches**: Calling a `@Cacheable` method from within the same class. This bypasses Spring's proxy wrapper, disabling cache interception.
+*   **Storing non-serializable objects in Redis**: Forgetting to implement `Serializable` on custom DTO classes, causing serialization errors on Redis writes.
+
+<Callout type="note" title="Self-Invocation Limit">
+  Spring Cache relies on AOP proxies. If you call a `@Cacheable` method from another method within the same service class, the call bypasses the proxy and executes the method directly without checking the cache.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Spring Cache decouples caching logic from specific cache provider implementations.
+*   Use `@Cacheable` to cache read values, and `@CacheEvict` to clear stale entries.
+*   Use Redis for distributed caching to ensure data consistency in microservices.
+*   Configure a Time-to-Live (TTL) on cache keys to prevent data staleness.

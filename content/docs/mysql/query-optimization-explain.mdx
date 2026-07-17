@@ -1,14 +1,71 @@
 ---
 title: "Query Optimization & EXPLAIN"
-description: "Learn about Query Optimization & EXPLAIN in our comprehensive Full Stack Guide."
+description: "Optimize query execution performance by interpreting EXPLAIN query plans and avoiding table scans."
 ---
 
 # Query Optimization & EXPLAIN
 
-Welcome to the section on **Query Optimization & EXPLAIN**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Query Optimization & EXPLAIN.
+Query Optimization is the process of improving SQL query execution speed. By analyzing query plans using the `EXPLAIN` keyword, developers can identify table scans, evaluate index efficiency, and rewrite slow queries.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding query plans and join type evaluations is key to SQL performance optimization.
+
+### The EXPLAIN Keyword
+Prefixing a query with `EXPLAIN` instructs the database engine to output its execution plan instead of running the query. The output shows column properties describing the execution steps:
+-   **`type`**: The join type evaluation. Order from best to worst:
+    1.  `const` / `eq_ref`: Primary key lookups (ideal).
+    2.  `ref`: Secondary index match lookups.
+    3.  `range`: Index range searches (using `>`, `<`, or `BETWEEN`).
+    4.  `index`: Index scans (scanning the entire index tree).
+    5.  `ALL`: Full Table Scan (worst). Scans every row in the table, degrading performance.
+-   **`key`**: The actual index chosen by the optimizer.
+-   **`rows`**: An estimate of the number of rows the engine must inspect to return results.
+-   **`Extra`**: Additional details (e.g. `Using filesort` or `Using temporary`, indicating slow query execution steps).
+
+---
+
+## Code Example
+
+Here is an example demonstrating query analysis using the `EXPLAIN` keyword:
+
+```sql
+-- 1. Unoptimized query (triggers Full Table Scan - type: ALL)
+EXPLAIN SELECT * FROM users WHERE signup_date = '2026-07-16';
+
+-- 2. Optimize table by adding an index
+CREATE INDEX idx_signup ON users(signup_date);
+
+-- 3. Optimized query (uses index - type: ref, rows: 5)
+EXPLAIN SELECT * FROM users WHERE signup_date = '2026-07-16';
+```
+
+---
+
+## Best Practices
+
+*   **Avoid SELECT ***: Query only the specific columns required by your application to minimize network overhead and support covering indexes.
+*   **Ensure type = ref or const**: Target join type evaluations of `const`, `eq_ref`, or `ref` in your query plans.
+*   **Optimize Filesorts**: Avoid `Using filesort` by creating indexes on sorting columns (`ORDER BY`) to leverage pre-sorted index order.
+*   **Perform Regular Table Analysis**: Run `ANALYZE TABLE` to update database statistics, helping the query optimizer make better index decisions.
+
+---
+
+## Common Mistakes
+
+*   **Ignoring type: ALL scans in production**: Allowing queries that perform full table scans to run in high-traffic production databases, degrading performance under load.
+*   **Using wildcard searches at the start of strings**: Querying like `LIKE '%text'`, which prevents the database engine from using indexes.
+*   **Applying functions to indexed columns**: Querying like `WHERE YEAR(signup_date) = 2026`, which disables index lookups. Use range boundaries instead.
+
+<Callout type="note" title="EXPLAIN FORMAT=JSON">
+  In MySQL, run `EXPLAIN FORMAT=JSON SELECT ...` to output query cost metrics (in query cost units), providing deeper insight into optimizer decisions.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `EXPLAIN` outputs query plans, identifying performance bottlenecks without executing queries.
+*   Avoid `type = ALL` table scans in production databases.
+*   Eliminate `Using filesort` and `Using temporary` by adding indexes on sorting columns.
+*   Avoid applying functions to indexed columns to maintain index lookup support.

@@ -1,14 +1,88 @@
 ---
 title: "Streams & Lambda Expressions"
-description: "Learn about Streams & Lambda Expressions in our comprehensive Full Stack Guide."
+description: "Master Java functional programming, functional interfaces, lambda syntax, and Streams API pipelines."
 ---
 
 # Streams & Lambda Expressions
 
-Welcome to the section on **Streams & Lambda Expressions**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Streams & Lambda Expressions.
+Java 8 introduced functional programming features to the language. Combining **Lambda Expressions** (anonymous function implementations) and the **Streams API** allows you to write declarative, readable, and highly parallelizable data pipelines.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding functional interfaces and Stream execution pipelines is key to functional Java design.
+
+### Functional Interfaces
+A functional interface is an interface that contains exactly one abstract method (annotated with `@FunctionalInterface`). Lambdas implement these interfaces directly. Core built-in interfaces include:
+-   `Predicate<T>`: Accepts a value and returns a boolean (e.g. for filtering).
+-   `Function<T, R>`: Accepts a value and returns a transformed value.
+-   `Consumer<T>`: Accepts a value and returns nothing (e.g. for printing or saving).
+-   `Supplier<T>`: Accepts nothing and returns a new value.
+
+### The Streams API pipeline
+A Stream does not store data; it operates on a data source (like a list) and processes elements via a pipeline:
+1.  **Source**: The collection to process (e.g. `list.stream()`).
+2.  **Intermediate Operations (Lazy)**: Filter, map, or sort elements. These return a new Stream and are not executed until a terminal operation is called.
+3.  **Terminal Operation (Eager)**: Collect, count, or reduce elements, executing the pipeline and closing the stream.
+
+---
+
+## Code Example
+
+Here is an implementation of a data pipeline filtering users, converting names to uppercase, and collecting them into a list:
+
+```java
+package com.devdocs.streams;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+record User(String name, int age) {}
+
+public class StreamsApp {
+    public static void main(String[] args) {
+        List<User> users = List.of(
+            new User("Mahesh", 25),
+            new User("Sam", 17),
+            new User("Alex", 30)
+        );
+
+        // Declarative stream pipeline
+        List<String> activeNames = users.stream()
+            .filter(u -> u.age() >= 18)        // Intermediate operation
+            .map(u -> u.name().toUpperCase())  // Intermediate operation
+            .collect(Collectors.toList());      // Terminal operation
+
+        System.out.println(activeNames); // ["MAHESH", "ALEX"]
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Keep Lambdas Stateless**: Ensure lambdas do not modify outer variables or rely on mutable state, as this breaks parallelism.
+*   **Prefer Method References**: Use method references (e.g. `User::name`) instead of explicit lambdas (e.g. `u -> u.name()`) to make code cleaner.
+*   **Do Not Reuse Streams**: Once a terminal operation is called, a Stream is closed. Reusing a closed stream throws an `IllegalStateException`.
+*   **Use Parallel Streams Wisely**: Only use `parallelStream()` for CPU-heavy tasks on massive datasets. For small lists or database queries, parallel overhead can slow down performance.
+
+---
+
+## Common Mistakes
+
+*   **Reusing closed streams**: Attempting to query a stream reference twice, throwing runtime exceptions.
+*   **Forgetting terminal operations**: Defining a stream pipeline with only intermediate operations (like `filter`), causing the code to never execute.
+*   **Modifying source collections inside streams**: Writing lambdas that mutate elements in the source list during stream execution, causing race conditions.
+
+<Callout type="tip" title="Primitive Stream Types">
+  Avoid boxing overhead (converting primitive `int` to `Integer`) by using specialized primitive stream classes like `IntStream`, `DoubleStream`, or `LongStream`.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Lambdas implement functional interfaces that contain a single abstract method.
+*   Stream intermediate operations are lazy and only execute when a terminal operation is called.
+*   Method references (`Class::method`) make functional pipelines cleaner.
+*   Do not mutate state inside stream lambdas to prevent side-effect bugs.

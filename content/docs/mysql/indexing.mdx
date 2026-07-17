@@ -1,14 +1,72 @@
 ---
 title: "Indexing"
-description: "Learn about Indexing in our comprehensive Full Stack Guide."
+description: "Master database indexing, B-Tree vs Hash index structures, and composite index rules."
 ---
 
 # Indexing
 
-Welcome to the section on **Indexing**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Indexing.
+Database Indexing is the primary performance tuning tool in relational databases. Indexes are separate data structures (usually B-Trees) that store a sorted copy of specific columns, allowing the database engine to search rows instantly in $O(\log N)$ logarithmic time instead of scanning entire tables in $O(N)$ linear time.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding index architectures and composite indexing rules is key to database query tuning.
+
+### Primary vs. Secondary Indexes
+-   **Primary Index**: Built automatically on the primary key. In InnoDB, the primary index is **clustered**, meaning the index leaf nodes store the actual database row data.
+-   **Secondary Index**: Custom indexes built on non-primary keys (e.g. `CREATE INDEX idx_email ON users(email)`). Leaf nodes store the primary key value of matching rows, requiring a second lookup to fetch the actual row data.
+
+### B-Tree vs. Hash Indexes
+-   **B-Tree Index (Default)**: Organizes data in a balanced tree structure. Supports equal comparisons (`=`), range lookups (`>`, `<`), and sorting.
+-   **Hash Index**: Stores hash tables. Fast for equal lookups (`=`) in $O(1)$ constant time, but does not support range queries or sorting.
+
+### Composite Index & The Leftmost Prefix Rule
+An index built on multiple columns (e.g. `users(last_name, first_name)`). The database engine can only use a composite index if the query filters include the leftmost column first. A query searching by `first_name` alone cannot use the composite index.
+
+---
+
+## Code Example
+
+Here is an example demonstrating composite index creation and how the leftmost prefix rule dictates query execution:
+
+```sql
+-- 1. Create a composite index on last_name and first_name
+CREATE INDEX idx_name ON users(last_name, first_name);
+
+-- 2. Query CAN use index (filters leftmost last_name first)
+SELECT * FROM users 
+WHERE last_name = 'Shelake' AND first_name = 'Mahesh';
+
+-- 3. Query CANNOT use index (skips leftmost last_name)
+SELECT * FROM users 
+WHERE first_name = 'Mahesh';
+```
+
+---
+
+## Best Practices
+
+*   **Index Foreign Key Columns**: Always create indexes on foreign key columns, as they are frequently used in join operations.
+*   **Follow Leftmost Prefix Order**: Arrange columns in composite indexes by placing the most selective, frequently filtered columns first.
+*   **Avoid Over-Indexing**: Every index slows down write operations (`INSERT`, `UPDATE`, `DELETE`) because the database must update the index structures along with the table.
+*   **Use Covering Indexes**: Create indexes containing all columns requested by a query (e.g. `INDEX (email, name)`) to allow the engine to return data directly from the index tree without lookup cycles.
+
+---
+
+## Common Mistakes
+
+*   **Indexing low-cardinality columns**: Creating indexes on columns with few distinct values (like `gender` or `status`), which is ignored by query optimizers.
+*   **Over-indexing write-heavy tables**: Creating dozens of indexes on logs tables, significantly slowing down write throughput.
+*   **Forgetting composite index column order**: Creating a composite index and querying with columns in the wrong order, causing the database to perform slow table scans.
+
+<Callout type="warning" title="Write Overhead">
+  Each index adds storage overhead and slows down write operations. Avoid creating redundant indexes or indexing columns that are rarely filtered.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Indexes speed up row lookups from linear scan times to logarithmic search times.
+*   Clustered indexes store row data; secondary indexes store primary key references.
+*   Composite indexes require queries to filter by the leftmost column first.
+*   Balance index counts to maintain high write performance.

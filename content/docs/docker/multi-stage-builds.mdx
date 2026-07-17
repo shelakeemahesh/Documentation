@@ -1,14 +1,71 @@
 ---
 title: "Multi-Stage Builds"
-description: "Learn about Multi-Stage Builds in our comprehensive Full Stack Guide."
+description: "Optimize Docker image sizes using multi-stage builds to separate compiler utilities from runtime environments."
 ---
 
 # Multi-Stage Builds
 
-Welcome to the section on **Multi-Stage Builds**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Multi-Stage Builds.
+Multi-Stage Builds allow you to compile lightweight production Docker images. By using multiple `FROM` statements in a single Dockerfile, you can compile and package your application inside a heavy build stage, and copy only the compiled binaries into a minimal runtime image, reducing image sizes by up to 90%.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding build/runtime stages and artifact delegation is key to image compilation tuning.
+
+### The Multi-Stage Architecture
+In standard Docker builds, compiler tools (like Maven, JDK, or npm) remain in the final image, bloating its size and creating security vulnerabilities. Multi-stage builds solve this:
+1.  **Build Stage**: Uses a large developer image containing compilers to download dependencies and build the application.
+2.  **Runtime Stage**: Uses a small runtime-only image (like `alpine` or `distroless`). Copies only the compiled binary file (e.g. jar or dist files) from the build stage, leaving compiler tools behind.
+
+---
+
+## Code Example
+
+Here is an implementation of a multi-stage Dockerfile compiling a Java Spring Boot application:
+
+```dockerfile
+# STAGE 1: Compilation Build environment
+FROM maven:3.8-openjdk-17-slim AS builder
+WORKDIR /build
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn package -DskipTests
+
+# STAGE 2: Minimal Runtime environment
+FROM openjdk:17-slim
+WORKDIR /app
+# Copy compiled jar artifact from the builder stage
+COPY --from=builder /build/target/*.jar app.jar
+EXPOSE 8080
+USER 1000
+CMD ["java", "-jar", "app.jar"]
+```
+
+---
+
+## Best Practices
+
+*   **Use Named Stages**: Name your build stages using `AS <name>` (e.g. `AS builder`) to make `COPY --from` references clear.
+*   **Prefer Distroless base images for runtime**: Use distroless base images for runtime stages. They contain only your application and its runtime dependencies, lacking shells or package managers, making them highly secure.
+*   **Clean Up Compiler caches**: Avoid copying compiler caches into the runtime stage to keep image sizes minimal.
+*   **Enforce Non-Root Users**: Declare a non-root `USER` inside runtime stages to protect host kernels.
+
+---
+
+## Common Mistakes
+*   **Copying source code folders into the runtime stage**: Copying the entire `/src` directory instead of only copying compiled jar files.
+*   **Forgetting to name stages**: Referencing build stages by index numbers (e.g. `COPY --from=0`) instead of using readable names, making code maintenance difficult.
+*   **Leaving developer tools active in production images**: Storing compile tools (like Maven or package managers) in final production images, widening the attack surface.
+
+<Callout type="tip" title="Security Advantage">
+  Eliminating shells (like `/bin/sh` or `/bin/bash`) from your final runtime image prevents attackers from running scripts if they compromise the container.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Multi-stage builds separate compile steps from runtime configurations.
+*   Copy only compiled binaries into the final runtime stage.
+*   Use minimal base images (like Alpine or Distroless) for runtime stages.
+*   Eliminating package managers from runtime images reduces security risks.

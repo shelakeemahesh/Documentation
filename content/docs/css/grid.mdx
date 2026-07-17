@@ -1,14 +1,76 @@
 ---
 title: "Grid"
-description: "Learn about Grid in our comprehensive Full Stack Guide."
+description: "Build powerful, two-dimensional grid layouts using CSS Grid templates and areas."
 ---
 
 # Grid
 
-Welcome to the section on **Grid**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Grid.
+CSS Grid Layout is the most powerful layout system available in CSS. Unlike Flexbox, which is one-dimensional, CSS Grid is **two-dimensional**, allowing you to align elements in rows and columns simultaneously to build complex page structures.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding tracks, fractions, templates, and grid gaps is essential for building two-dimensional web layouts.
+
+### Grid Containers and Tracks
+-   **Grid Tracks**: The rows and columns defined inside a grid container. They are configured using `grid-template-columns` and `grid-template-rows`.
+-   **The fr Unit (Fraction)**: Represents a fraction of the available free space inside the grid container.
+
+### Auto-Placement and Responsive Grids
+CSS Grid can place elements into columns and rows automatically. Combining `repeat()`, `auto-fit` (or `auto-fill`), and `minmax()` allows you to create highly responsive card grids that scale automatically without requiring media queries:
+```css
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+```
+
+---
+
+## Code Example
+
+Here is an implementation of a responsive three-column grid layout for product cards:
+
+```css
+.card-grid {
+    display: grid;
+    /* Define columns that wrap automatically with a minimum size of 280px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    /* Define column and row spacing */
+    gap: 24px;
+    padding: 32px;
+}
+
+.card-item {
+    background-color: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 20px;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Grid for 2D Layouts**: Use CSS Grid when your layout requires aligning items along both rows and columns (like dashboard layouts or complex landing pages).
+*   **Leverage grid-template-areas**: Use named areas (via `grid-template-areas` and `grid-area`) to make complex page layouts readable directly from your CSS code.
+*   **Use minmax() for Sizing boundaries**: Use the `minmax()` function to ensure columns shrink fluidly while maintaining minimum boundaries to prevent content clipping.
+*   **Keep Gaps Consistent**: Standardize row/column gaps across pages to maintain layout rhythm consistency.
+
+---
+
+## Common Mistakes
+
+*   **Using Grid when Flexbox is simpler**: Using Grid for simple, single-axis layouts (like horizontal button lists) where Flexbox is easier to configure.
+*   **Confusing auto-fit and auto-fill**: Using `auto-fill` (which leaves empty columns visible if content is sparse) instead of `auto-fit` (which collapses empty columns to let content expand).
+*   **Hardcoding absolute row counts**: Hardcoding row heights instead of letting row heights expand dynamically to fit their contents.
+
+<Callout type="note" title="Subgrid Feature">
+  Modern browsers support `grid-template-columns: subgrid`, which allows nested grid elements to inherit and align to the column tracks defined on their parent grid container.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   CSS Grid is built for two-dimensional row and column structures.
+*   Use `fr` units to allocate available space proportionally.
+*   Use `auto-fit` combined with `minmax()` to build responsive grids without media queries.
+*   `grid-template-areas` map layout grids visually in your styles sheets.

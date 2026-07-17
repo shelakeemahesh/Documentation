@@ -1,14 +1,90 @@
 ---
 title: "Docker Compose"
-description: "Learn about Docker Compose in our comprehensive Full Stack Guide."
+description: "Build and run multi-container applications using Docker Compose yml files."
 ---
 
 # Docker Compose
 
-Welcome to the section on **Docker Compose**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Docker Compose.
+Docker Compose is a tool for defining and running multi-container applications. By using a single YAML configuration file, you can configure your application's services, networks, and volumes, launching the entire stack with a single command.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding compose file structures and service dependency orchestrations is key to multi-container design.
+
+### The docker-compose.yml Structure
+A Compose file declares the configuration of your application stack:
+-   **`services`**: Defines the individual containers to spin up (e.g. `web`, `db`).
+-   **`ports`**: Maps container ports to host ports.
+-   **`environment`**: Injects environment variables into service containers.
+-   **`depends_on`**: Specifies service startup dependencies (e.g. ensuring the database starts before the backend API).
+
+---
+
+## Code Example
+
+Here is an implementation of a multi-container stack running a Node.js web application and a Redis database:
+
+```yaml
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:3000"
+    environment:
+      - REDIS_HOST=cache
+    depends_on:
+      - cache
+    networks:
+      - app-net
+
+  cache:
+    image: "redis:alpine"
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
+```
+
+To spin up and down this stack in your terminal, run:
+```bash
+# Start all services defined in yml in the background
+docker compose up -d
+
+# Stop services and remove active networks
+docker compose down
+```
+
+---
+
+## Best Practices
+
+*   **Use environment Files**: Extract sensitive credentials into local `.env` files, letting Docker Compose load them automatically.
+*   **Declare Health Checks**: Configure health checks (`healthcheck`) on database services to ensure they are fully ready before launching dependent APIs.
+*   **Set Resource Limits**: Define memory and CPU limits on services to prevent a single container from hogging host resources.
+*   **Use Named Volumes for Databases**: Declare named volumes under services to prevent database data loss when rebuilding containers.
+
+---
+
+## Common Mistakes
+
+*   **Committing secrets in docker-compose.yml**: Hardcoding database passwords directly inside version-controlled YAML files, exposing credentials.
+*   **Confusing depends_on with readiness**: Assuming `depends_on` waits for the database to accept connection queries before launching dependent APIs. It only waits for the database container to *start*. Use healthcheck checks to enforce readiness.
+*   **Forgetting to rebuild images on source code changes**: Running `docker compose up` after updating local files without passing the `--build` flag, running outdated container code.
+
+<Callout type="tip" title="Automatic Rebuilds">
+  Force Compose to compile local files and rebuild images before starting containers by passing the build flag: 
+  `docker compose up -d --build`
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Docker Compose orchestrates multi-container applications using a single YAML configuration file.
+*   Launch and stop entire application stacks using `docker compose up` and `down`.
+*   Extract environment variables into local `.env` files to protect secrets.
+*   Combine `depends_on` with `healthcheck` to enforce container startup order.

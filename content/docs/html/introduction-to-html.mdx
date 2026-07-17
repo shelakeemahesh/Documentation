@@ -1,14 +1,78 @@
 ---
 title: "Introduction to HTML"
-description: "Learn about Introduction to HTML in our comprehensive Full Stack Guide."
+description: "Understand the fundamentals of HTML, elements, attributes, and browser rendering lifecycles."
 ---
 
 # Introduction to HTML
 
-Welcome to the section on **Introduction to HTML**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction to HTML.
+HTML (HyperText Markup Language) is the standard backbone language used to structure documents for web browsers. It defines the structural layout and content meaning of web pages, turning raw text and assets into rich, interactive visual documents.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the DOM tree and HTML semantics is essential for building web applications.
+
+### Elements, Tags, and Attributes
+HTML documents are composed of elements. An element consists of a start tag, optional attributes, content, and an end tag:
+```html
+<a href="https://example.com" class="link">Visit Site</a>
+```
+-   **Tag**: The angle-bracket identifiers (e.g. `<a>` and `</a>`).
+-   **Attributes**: Key-value pairs inside the opening tag (e.g. `href` and `class`) that configure element behaviors.
+
+### The Document Object Model (DOM)
+When a browser loads an HTML document, it parses the markup and constructs the Document Object Model (DOM)—a hierarchical tree of nodes representing elements, text, and attributes. JavaScript interacts with this tree dynamically to modify the UI.
+
+---
+
+## Code Example
+
+Here is a standard, correct HTML snippet demonstrating tag nesting and attribute syntax:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Core HTML Page</title>
+</head>
+<body>
+    <main>
+        <section>
+            <h1>Understanding HTML Core Structures</h1>
+            <p>HTML organizes textual content into structured hierarchies.</p>
+            <a href="/docs/html/semantic-html" class="nav-link">Learn Semantic HTML</a>
+        </section>
+    </main>
+</body>
+</html>
+```
+
+---
+
+## Best Practices
+
+*   **Always Close Your Tags**: Ensure every opening tag has a matching closing tag to prevent rendering parser bugs.
+*   **Validate Your Markup**: Run your HTML through validation tools (like the W3C markup validator) to catch syntax errors.
+*   **Declare the Language**: Always include the `lang` attribute on the root `<html>` element to support screen readers and search localization.
+*   **Double Quote Attributes**: Wrap attribute values in double quotes consistently (e.g. `class="button"` rather than `class=button`).
+
+---
+
+## Common Mistakes
+
+*   **Nesting block-level elements inside inline elements**: Placing a block element (like a `div` or `p`) inside an inline element (like a `span` or `a`), which violates HTML parsing specs.
+*   **Using HTML for presentation**: Using tags like `<center>` or `<font>` to style layout instead of leaving presentation to CSS.
+*   **Forgetting encoding tags**: Omitting the UTF-8 charset declaration, causing symbols to display incorrectly in some browsers.
+
+<Callout type="note" title="Browser Tag Auto-Correction">
+  Modern browsers try to correct malformed HTML structures dynamically, but this uses extra client resources and can cause layout shifts between different browsers.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   HTML defines document structure, not design.
+*   The browser converts parsed HTML files into a dynamic DOM tree.
+*   Attributes modify element configurations.
+*   Keep tags properly nested to prevent browser parser corrections.

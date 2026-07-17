@@ -1,14 +1,90 @@
 ---
-title: "HTML5 APIs (Storage, Geolocation, Canvas)"
-description: "Learn about HTML5 APIs (Storage, Geolocation, Canvas) in our comprehensive Full Stack Guide."
+title: "HTML5 APIs"
+description: "Explore Web Storage, Geolocation, Drag & Drop, and native HTML5 Browser APIs."
 ---
 
-# HTML5 APIs (Storage, Geolocation, Canvas)
+# HTML5 APIs
 
-Welcome to the section on **HTML5 APIs (Storage, Geolocation, Canvas)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for HTML5 APIs (Storage, Geolocation, Canvas).
+Modern browsers provide powerful JavaScript APIs built directly into the HTML5 runtime environment. These APIs allow developers to store persistent data locally, capture device geolocation, handle file drag-and-drop operations, and create custom canvas graphics without relying on third-party libraries.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding native browser capability states allows you to write offline-capable, interactive web applications.
+
+### Web Storage: localStorage and sessionStorage
+Provides key-value storage in the browser, offering a larger storage capacity (up to 5MB–10MB) compared to traditional cookies (4KB limit).
+-   **`localStorage`**: Persists data indefinitely across browser sessions and tabs until explicitly cleared.
+-   **`sessionStorage`**: Keeps data active only for the current tab session; closing the tab immediately clears the storage.
+
+### Geolocation API
+Allows users to share their physical location with web applications. For privacy, the browser prompts the user for permission before sharing location coordinates.
+
+### Drag and Drop API
+Allows you to drag elements across a page and drop them inside target zones, which is useful for custom Kanban boards or file upload systems.
+
+---
+
+## Code Example
+
+Here is a practical script demonstrating how to store and retrieve user theme configurations inside `localStorage` safely, checking for browser environment states:
+
+```html
+<div class="p-6 bg-zinc-900 border border-zinc-800 rounded-xl space-y-4 max-w-sm">
+    <h3 class="font-bold text-zinc-100">Storage API Tester</h3>
+    <p id="theme-status" class="text-sm text-zinc-400">Current Theme: Unknown</p>
+    <button
+        id="save-theme-btn"
+        class="px-4 py-2 bg-amber-500 text-zinc-950 font-bold rounded hover:bg-amber-400"
+    >
+        Save Theme Choice
+    </button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const statusEl = document.getElementById('theme-status');
+        const saveBtn = document.getElementById('save-theme-btn');
+        
+        // 1. Read persistent choice from localStorage
+        const savedTheme = localStorage.getItem('user-theme') || 'system-default';
+        statusEl.textContent = `Current Theme: ${savedTheme}`;
+        
+        saveBtn.addEventListener('click', () => {
+            // 2. Write item to storage
+            localStorage.setItem('user-theme', 'dark-mode');
+            statusEl.textContent = 'Current Theme: dark-mode';
+            console.log('Saved preferences successfully.');
+        });
+    });
+</script>
+```
+
+---
+
+## Best Practices
+
+*   **Check for Feature Support**: Always check if an API is supported by the user's browser before calling it (e.g. `if ('geolocation' in navigator)`).
+*   **Handle Storage Quota Limits**: Wrap storage writes (`setItem`) inside a try-catch block to catch `QuotaExceededError` exceptions when storage limits are hit.
+*   **Limit Sensitive Data Storage**: Never store sensitive security tokens, passwords, or personal user records in `localStorage`, as they are vulnerable to Cross-Site Scripting (XSS) attacks.
+*   **Handle Async Geolocation**: Always provide user-friendly error feedback if a user denies location sharing or if their device is offline.
+
+---
+
+## Common Mistakes
+
+*   **Assuming localStorage is immediate across tabs**: Forgetting that local storage events fire asynchronously when synchronized updates occur between active tabs.
+*   **Storing complex objects directly as strings**: Trying to write raw objects to storage (e.g. `localStorage.setItem('user', userObj)`), which defaults to writing the string `"[object Object]"`. Always serialize objects to JSON strings first.
+*   **Neglecting file drag validation**: Intercepting dragged drop events without validating file sizes or MIME types on the frontend before calling upload streams.
+
+<Callout type="warning" title="Security & localStorage">
+  Do not store session JSON Web Tokens (JWT) in `localStorage` if they can be accessed by scripts, as this exposes them to XSS attacks. Store tokens inside secure, HTTP-only cookies instead.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   HTML5 APIs provide native browser capabilities without external plugins.
+*   `localStorage` persists data indefinitely; `sessionStorage` clears when the tab is closed.
+*   Always serialize objects using `JSON.stringify()` before writing to Web Storage.
+*   Never store credentials or sensitive personal information in local storage keys.

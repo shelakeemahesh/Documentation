@@ -1,14 +1,90 @@
 ---
-title: "Testing (JUnit, Mockito)"
-description: "Learn about Testing (JUnit, Mockito) in our comprehensive Full Stack Guide."
+title: "Testing"
+description: "Learn how to write unit, integration, and REST slice tests in Spring Boot."
 ---
 
-# Testing (JUnit, Mockito)
+# Testing
 
-Welcome to the section on **Testing (JUnit, Mockito)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Testing (JUnit, Mockito).
+Testing is essential for building stable, production-ready Spring Boot applications. Spring Boot provides robust testing configurations (using JUnit 5, AssertJ, and Mockito), enabling developers to write unit tests, mock controller requests, and verify database operations.
 
 ## Core Concepts
+Understanding testing annotations and dependency mocking is key to writing reliable tests.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### The Testing Hierarchy
+-   **Unit Tests (Fast)**: Test single classes in isolation, using Mockito to mock all external dependencies.
+-   **Slice Tests (WebMvcTest / DataJpaTest)**: Test specific application layers in isolation (e.g., testing only REST controllers without loading database configurations).
+-   **Integration Tests (Slow)**: Load the full Spring ApplicationContext (via `@SpringBootTest`) to test interactions between all components.
+
+### Mocking Dependencies: @Mock and @MockBean
+-   **`@Mock`**: Standard Mockito annotation used in unit tests to create mock dependencies.
+-   **`@MockBean`**: Spring annotation that adds a mock dependency into the Spring ApplicationContext, replacing the real bean.
+
+---
+
+## Code Example
+
+Here is an implementation of a REST controller slice test using `MockMvc` and `@WebMvcTest`:
+
+```java
+package com.example.demo.controller;
+
+import com.example.demo.service.ProductService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(ProductController.class) // Load only the web layer
+public class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc; // Mock HTTP requests client
+
+    @MockBean
+    private ProductService productService; // Inject mock bean into context
+
+    @Test
+    public void testGetProductEndpoint() throws Exception {
+        // Configure mock behavior
+        when(productService.checkAvailability("123")).thenReturn(true);
+
+        // Execute HTTP GET request mock and assert HTTP 200 status
+        mockMvc.perform(get("/api/products/123"))
+               .andExpect(status().isOk());
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Slice Tests over SpringBootTest**: Use specialized annotations (like `@WebMvcTest` or `@DataJpaTest`) instead of loading the full application context with `@SpringBootTest` to keep tests fast.
+*   **Keep Unit Tests Isolated**: Do not load Spring Context in unit tests. Use Mockito's `openMocks` to mock dependencies in memory.
+*   **Use Testcontainers for Integration Tests**: Avoid using in-memory databases (like H2) for integration tests. Use **Testcontainers** to spin up real database instances (like PostgreSQL) in Docker.
+*   **Assert with AssertJ**: Use AssertJ's fluent API (`assertThat(...)`) to write readable assertions.
+
+---
+
+## Common Mistakes
+
+*   **Using @SpringBootTest for simple unit tests**: Loading the full application context for basic class logic tests, slowing down build times.
+*   **Mismatched test contexts**: Re-configuring the application context in different tests using `@MockBean` repeatedly, preventing Spring from caching the context and slowing down builds.
+*   **Asserting on mock calls incorrectly**: Writing tests that only assert on mock setups without verifying the actual class behavior.
+
+<Callout type="tip" title="Spring Context Caching">
+  Spring caches the ApplicationContext between tests. If you use `@MockBean` on different classes in different test files, Spring is forced to destroy and recreate the context repeatedly, slowing down build runs.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Specialized slice tests (`@WebMvcTest`, `@DataJpaTest`) run faster than full integration tests.
+*   Use Mockito to mock external dependencies in isolation.
+*   Use Testcontainers to run integration tests against real Docker database instances.
+*   Assert results using the fluent AssertJ API (`assertThat`).

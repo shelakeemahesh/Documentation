@@ -1,14 +1,76 @@
 ---
-title: "Partitioning"
-description: "Learn about Partitioning in our comprehensive Full Stack Guide."
+title: "Table Partitioning"
+description: "Scale large tables in PostgreSQL using Range, List, and Hash table partitioning configurations."
 ---
 
-# Partitioning
+# Table Partitioning
 
-Welcome to the section on **Partitioning**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Partitioning.
+Table Partitioning divides a massive logical table into smaller physical child tables (partitions) based on a partitioning key. This improves query speeds and simplifies maintenance operations by allowing the database engine to search only the relevant partitions (**Partition Pruning**).
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding table partitioning methods and partition pruning is key to database scaling.
+
+### Primary Partitioning Methods
+-   **Range Partitioning**: Maps rows to partitions based on value ranges (e.g. partitioning transaction logs by year/month).
+-   **List Partitioning**: Maps rows based on explicit value lists (e.g. partitioning customers by region).
+-   **Hash Partitioning**: Maps rows using a hash function, distributing data evenly across a set number of partitions. Ideal for balancing storage loads.
+
+### Partition Pruning
+If a query filters on the partitioning key, the query planner ignores irrelevant partitions and queries only the target child tables directly. This keeps search queries fast even on tables containing billions of rows.
+
+---
+
+## Code Example
+
+Here is an implementation of range partitioning on a transaction logs table:
+
+```sql
+-- 1. Create parent partitioned table using Range Partitioning
+CREATE TABLE transaction_logs (
+    id BIGINT NOT NULL,
+    log_date DATE NOT NULL,
+    message TEXT
+) PARTITION BY RANGE (log_date);
+
+-- 2. Create physical child partitions for date ranges
+CREATE TABLE logs_2026_q1 PARTITION OF transaction_logs
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+
+CREATE TABLE logs_2026_q2 PARTITION OF transaction_logs
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+
+-- 3. Query CAN trigger Partition Pruning (queries only logs_2026_q1)
+SELECT * FROM transaction_logs 
+WHERE log_date BETWEEN '2026-02-01' AND '2026-03-01';
+```
+
+---
+
+## Best Practices
+
+*   **Use Range Partitioning for Timestamps**: Standardize on range partitioning by date/time for time-series data to simplify archiving old data.
+*   **Include Partition Key in Indexes**: Ensure all indexes and primary keys include the partitioning key to maintain validation checks.
+*   **Drop Old Data by Dropping Partitions**: Archive old data quickly by dropping entire partitions (e.g. `DROP TABLE logs_2020`) instead of running slow `DELETE` queries.
+*   **Monitor Partition Counts**: Limit partition counts per table (typically under 100) to prevent query planner slow downs.
+
+---
+
+## Common Mistakes
+
+*   **Inserting data without matching partitions**: Failing to create a partition for a date range, causing inserts to fail.
+*   **Querying without the partition key**: Writing search queries that omit the partitioning key, forcing the engine to scan all child partitions and slowing down performance.
+*   **Creating too many fine-grained partitions**: Partitioning tables by day over multiple years, creating thousands of child tables that slow down the query planner.
+
+<Callout type="note" title="Default Partition">
+  Create a default partition (`PARTITION OF ... DEFAULT`) to catch and store records that do not match defined ranges, preventing insertion failures.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Table partitioning splits massive tables into separate physical child tables.
+*   Partition pruning speeds up queries by skipping irrelevant partitions.
+*   Use range partitioning for date-based log tables.
+*   Drop old partitions directly to clean up storage space instantly.

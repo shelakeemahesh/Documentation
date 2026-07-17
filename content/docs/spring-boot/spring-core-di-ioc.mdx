@@ -1,14 +1,87 @@
 ---
-title: "Spring Core, DI & IoC"
-description: "Learn about Spring Core, DI & IoC in our comprehensive Full Stack Guide."
+title: "Spring Core (DI & IoC)"
+description: "Master Inversion of Control (IoC), Dependency Injection (DI), and Spring Bean lifecycle scopes."
 ---
 
-# Spring Core, DI & IoC
+# Spring Core (DI & IoC)
 
-Welcome to the section on **Spring Core, DI & IoC**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Spring Core, DI & IoC.
+Spring Core is the foundation of the Spring framework. It introduces the **Inversion of Control (IoC)** container, which manages class dependencies and lifecycles dynamically, promoting loose coupling and testability.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding IoC containers and dependency injection techniques is key to building modular backends.
+
+### Inversion of Control (IoC)
+In traditional programming, classes instantiate their own dependencies directly, creating tight coupling. In Spring, control is inverted: the IoC container instantiates, configures, and manages class lifecycles (known as **Spring Beans**), injecting dependencies dynamically at runtime.
+
+### Dependency Injection (DI) Modes
+-   **Constructor Injection (Recommended)**: Dependencies are injected via the class constructor, enforcing immutability and facilitating unit testing.
+-   **Setter Injection**: Dependencies are injected via setter methods, useful for optional configurations.
+
+### Spring Bean Scopes
+-   `Singleton` (Default): The IoC container creates a single instance shared globally.
+-   `Prototype`: A new instance is created every time it is requested from the container.
+
+---
+
+## Code Example
+
+Here is an implementation of constructor-based dependency injection in Spring Boot:
+
+```java
+package com.example.demo.service;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+
+@Repository // Register as a Spring Bean
+class OrderRepository {
+    public void saveOrder() {
+        System.out.println("Order saved to database.");
+    }
+}
+
+@Service // Register as a Spring Bean
+public class OrderService {
+    private final OrderRepository orderRepository; // Immutable dependency
+
+    // Constructor Injection: Spring resolves and injects OrderRepository automatically
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
+    public void placeOrder() {
+        orderRepository.saveOrder();
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Constructor Injection**: Always use constructor injection instead of field injection (`@Autowired` directly on fields) to make dependencies explicit and testable.
+*   **Define Fields as final**: Mark injected dependency fields as `final` to guarantee immutability.
+*   **Prefer Component Annotations**: Use specific annotations (`@Service`, `@Repository`, `@RestController`) rather than the generic `@Component` to declare beans.
+*   **Avoid Circular Dependencies**: Design service interfaces cleanly to prevent circular dependency compilation issues.
+
+---
+
+## Common Mistakes
+
+*   **Using Field Injection (@Autowired)**: Injecting variables directly on fields, which hides dependencies and makes mocking difficult in unit tests.
+*   **Assuming Singleton beans are thread-safe**: Forgetting that default Singleton beans are shared across threads, leading to race conditions if they maintain mutable state.
+*   **Confusing Bean naming**: Declaring duplicate bean classes without unique naming identifiers, causing bean collision errors during startup.
+
+<Callout type="warning" title="Field Injection Disadvantages">
+  Field injection (`@Autowired` on variables) is strongly discouraged. It prevents variables from being declared as `final` and makes instantiating class instances manually in unit tests impossible without reflection.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   The IoC container manages the lifecycle and dependencies of Spring Beans.
+*   Constructor injection is the industry standard for declaring dependencies.
+*   Spring Beans are singletons by default and should remain stateless.
+*   Mark injected dependencies as final to guarantee class immutability.

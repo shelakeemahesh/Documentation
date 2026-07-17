@@ -1,14 +1,71 @@
 ---
 title: "Prerequisites & Setup"
-description: "Learn about Prerequisites & Setup in our comprehensive Full Stack Guide."
+description: "Configure your local developer environment with the required languages, runtime environments, and tools."
 ---
 
 # Prerequisites & Setup
 
-Welcome to the section on **Prerequisites & Setup**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Prerequisites & Setup.
+Before starting the full-stack developer roadmap, you need to configure your local developer environment with a standard set of languages, runtimes, package managers, and containerization platforms. 
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Setting up a robust local environment prevents runtime collisions and configuration bugs down the road.
+
+### Runtimes and Languages
+Modern full-stack apps require runtime environments for both the frontend (Node.js) and the backend (Java Development Kit - JDK). We standardize on Node.js 20+ (LTS) and JDK 17+ to support modern language features like native ES Modules and Java Records.
+
+### Package Managers
+Package managers install, update, and manage project dependencies. We use **NPM** for frontend dependencies and **Maven** (or Gradle) for Spring Boot Java dependencies.
+
+### Containerization
+To run databases (MySQL, PostgreSQL, Redis) locally without polluting your host OS, we use **Docker** and **Docker Compose**.
+
+---
+
+## Code Example
+
+Run the following commands in your shell to verify that the required runtimes and tools are installed and configured correctly:
+
+```bash
+# 1. Verify Node.js (should be v20 or higher)
+node --version
+
+# 2. Verify Java compiler (should be v17 or higher)
+javac --version
+
+# 3. Verify Docker runtime status
+docker info
+
+# 4. Verify Git client installation
+git --version
+```
+
+---
+
+## Best Practices
+
+*   **Use Version Managers**: Use `nvm` (Node Version Manager) for Node and `sdkman` for Java to easily switch between versions.
+*   **Add Tools to PATH**: Ensure all CLI binaries (like `git`, `docker`, and `mvn`) are correctly added to your system's PATH.
+*   **Leverage SSH Keys**: Authenticate with GitHub using secure SSH keys instead of HTTPS passwords to prevent credentials prompts.
+*   **Enable Virtualization**: Ensure Hardware Virtualization (VT-x/AMD-V) is enabled in your BIOS/UEFI settings to run Docker containers efficiently.
+
+---
+
+## Common Mistakes
+
+*   **Using outdated Node versions**: Running Node 16 or lower, which is incompatible with modern bundlers like Vite and Next.js.
+*   **Mixing up JRE and JDK**: Installing the Java Runtime Environment (JRE) instead of the Java Development Kit (JDK), which prevents you from compiling Java code.
+*   **Running Docker without permissions**: Forgetting to add your user account to the `docker` user group on Linux, requiring `sudo` for every command.
+
+<Callout type="warning" title="Docker Installation">
+  On macOS and Windows, download and install **Docker Desktop**. It installs the Docker Engine, CLI, and Docker Compose in a single bundle, and manages VM virtualization automatically.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Node.js 20+ and JDK 17+ are the core runtimes for this roadmap.
+*   Use `nvm` and `sdkman` to manage different runtime versions.
+*   Docker is required to spin up databases and dependencies locally.
+*   Verify your local PATH configurations before starting compilation.

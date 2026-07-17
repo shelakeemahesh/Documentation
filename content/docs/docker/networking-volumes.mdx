@@ -1,14 +1,71 @@
 ---
 title: "Networking & Volumes"
-description: "Learn about Networking & Volumes in our comprehensive Full Stack Guide."
+description: "Master Docker network drivers, container communication, and data persistence using volumes."
 ---
 
 # Networking & Volumes
 
-Welcome to the section on **Networking & Volumes**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Networking & Volumes.
+Containers are isolated by default. To allow containers to communicate with each other, with external hosts, or with the host OS, Docker provides robust **Networking** drivers. To persist container data across restarts, Docker provides **Volumes** and **Bind Mounts**.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding networking drivers and data persistence methods is key to multi-container design.
+
+### Primary Network Drivers
+-   **`bridge` (Default)**: Creates a private virtual network on the host. Containers connected to the same bridge network can communicate using container names as DNS hosts.
+-   **`host`**: Bypasses network isolation, sharing the host OS network stack directly. Faster, but creates port collision risks.
+-   **`overlay`**: Connects multiple Docker daemons across hosts, enabling swarm services communication.
+
+### Data Persistence: Volumes vs. Bind Mounts
+-   **Volumes (Recommended)**: Managed entirely by Docker and stored in host storage directories. Safe from manual host modifications.
+-   **Bind Mounts**: Maps a specific, absolute directory path on the host machine directly into the container. Ideal for active local code editing.
+
+---
+
+## Code Example
+
+Here is an example demonstrating custom bridge network creation and volume mount allocation:
+
+```bash
+# 1. Create a custom user-defined bridge network
+docker network create app-network
+
+# 2. Create a persistent Docker volume
+docker volume create db-data
+
+# 3. Run database container mounting the volume and connecting to the network
+docker run --name database -d \
+  --network app-network \
+  -v db-data:/var/lib/mysql \
+  -e MYSQL_ROOT_PASSWORD=secret mysql:8.0
+```
+
+---
+
+## Best Practices
+
+*   **Use Named Volumes for DBs**: Always use named Docker volumes (rather than bind mounts) for database storage to ensure optimal file access speeds.
+*   **Create Custom Bridge Networks**: Never connect production containers to the default bridge network. Create dedicated user-defined bridge networks to enable DNS name resolution.
+*   **Set Read-Only Mounts**: Mount volumes as read-only (`-v vol:/dir:ro`) inside containers that do not require write access to reduce security vulnerabilities.
+*   **Isolate Databases**: Keep databases on private networks, exposing only public-facing APIs to ingress networks.
+
+---
+
+## Common Mistakes
+
+*   **Relying on transient container storage**: Storing database files directly inside container layers, causing complete data loss when containers are deleted.
+*   **Hardcoding container IP addresses**: Connecting services using container IP addresses, which change whenever containers restart. Use container DNS names instead.
+*   **Mixing up host and container mount paths**: Reversing host and container directories in mount statements (`-v container_dir:host_dir`), creating syntax errors.
+
+<Callout type="note" title="DNS Name Resolution">
+  Containers connected to custom bridge networks resolve each other automatically using container names (e.g. `database:3306`), eliminating the need to track dynamic IP allocations.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Custom bridge networks enable automatic DNS name resolution between containers.
+*   Docker volumes persist data across container restarts and updates safely.
+*   Bind mounts map host directories directly into containers, useful for local development.
+*   Never store persistent data directly inside ephemeral container layers.

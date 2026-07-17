@@ -1,14 +1,77 @@
 ---
 title: "Full-Text Search"
-description: "Learn about Full-Text Search in our comprehensive Full Stack Guide."
+description: "Build high-performance search engines inside PostgreSQL using TSVECTOR, TSQUERY, and GIN indexes."
 ---
 
 # Full-Text Search
 
-Welcome to the section on **Full-Text Search**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Full-Text Search.
+PostgreSQL includes a native, high-performance Full-Text Search (FTS) engine. This allows you to implement search features (supporting stemming, stop words removal, and search ranking) directly inside your database without needing to configure external search engines like Elasticsearch.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding text vectors and search query matches is key to search engine design.
+
+### tsvector & tsquery Data Types
+-   **`tsvector` (Text Search Vector)**: A document parsed into a list of normalized search terms (lexemes) with stop words (like "the", "and") removed (e.g. `'quick':1 'brown':2 'fox':3`).
+-   **`tsquery` (Text Search Query)**: A query term parsed into search matching expressions supporting logical operators (AND `&`, OR `|`, NOT `!`).
+
+### The Match Operator (@@)
+The `@@` operator checks if a `tsvector` document matches a `tsquery` search string: `WHERE vector @@ to_tsquery('fox & quick')`.
+
+---
+
+## Code Example
+
+Here is an implementation of a full-text search query on a articles table using GIN indexing and relevance ranking:
+
+```sql
+-- 1. Create table containing vector search documents
+CREATE TABLE articles (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    -- Generated search vector column combining title and content
+    search_vector TSVECTOR GENERATED ALWAYS AS (
+        to_tsvector('english', title || ' ' || content)
+    ) STORED
+);
+
+-- 2. Build GIN index on search vector column
+CREATE INDEX idx_articles_search ON articles USING GIN (search_vector);
+
+-- 3. Query documents using match and relevance ranking
+SELECT title, ts_rank(search_vector, query) AS rank
+FROM articles, to_tsquery('english', 'database & scale') query
+WHERE search_vector @@ query
+ORDER BY rank DESC;
+```
+
+---
+
+## Best Practices
+
+*   **Use Generated Columns for Vectors**: Store search documents in a generated `TSVECTOR` column to avoid parsing text on every search read.
+*   **Always Build GIN Indexes on Vectors**: Always build a GIN index on your `TSVECTOR` column to prevent full table scans during search queries.
+*   **Specify Language Dialects explicitly**: Explicitly define the language dialect (e.g. 'english') in vector and query functions to ensure search stem consistency.
+*   **Use plainto_tsquery for Raw Input**: Use `plainto_tsquery()` to convert unformatted user search strings into valid search expressions automatically.
+
+---
+
+## Common Mistakes
+
+*   **Parsing text strings on every search**: Running `to_tsvector()` on the fly inside search queries, slowing down search speeds.
+*   **Omitting GIN indexing on vectors**: Forgetting to add GIN indexes, causing the database to perform slow table scans under load.
+*   **Forgetting language mismatches**: Mixing English and Spanish vector definitions, which breaks stem matches.
+
+<Callout type="tip" title="Search Stemming">
+  PostgreSQL search engine normalizes words to their base forms (e.g., "running", "runs" map to "run"), allowing queries to find related word variations automatically.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `tsvector` stores normalized search terms; `tsquery` parses search queries.
+*   Use the `@@` operator to check if documents match search queries.
+*   Build GIN indexes on `TSVECTOR` columns to ensure fast search queries.
+*   Rank search results by relevance using the `ts_rank` function.

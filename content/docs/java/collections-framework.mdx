@@ -1,14 +1,88 @@
 ---
 title: "Collections Framework"
-description: "Learn about Collections Framework in our comprehensive Full Stack Guide."
+description: "Explore Java collections, including Lists, Sets, Maps, and performance comparisons."
 ---
 
 # Collections Framework
 
-Welcome to the section on **Collections Framework**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Collections Framework.
+The Java Collections Framework provides unified architectures for representing and manipulating groups of data objects. It offers optimized, reusable data structures (like ArrayLists, HashSets, and HashMaps) that eliminate the need to write custom sorting and indexing structures manually.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding Collections interfaces and implementation performance is key to data optimization.
+
+### Core Collections Interfaces
+-   **`List`**: An ordered collection that allows duplicate elements (e.g. `ArrayList`, `LinkedList`).
+-   **`Set`**: An unordered collection that contains no duplicate elements (e.g. `HashSet`, `TreeSet`).
+-   **`Map`**: Maps keys to values, containing no duplicate keys (e.g. `HashMap`, `TreeMap`).
+
+### Collections Performance Matrix
+| Collection | Add Operation | Search Operation | Ordering | Unique Elements | 
+| :--- | :--- | :--- | :--- | :--- |
+| **`ArrayList`** | O(1) amortized | O(N) linear | Insertion order | No |
+| **`HashSet`** | O(1) hash | O(1) hash | Unordered | Yes |
+| **`HashMap`** | O(1) hash | O(1) hash | Unordered | Yes (Keys) |
+| **`TreeSet`** | O(log N) | O(log N) | Sorted order | Yes |
+
+---
+
+## Code Example
+
+Here is an implementation of a user lookup map showcasing `HashMap` and type-safe insertions:
+
+```java
+package com.devdocs.collections;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class RegistryApp {
+    public static void main(String[] args) {
+        // 1. Declare Map using Interface references
+        Map<String, String> userRegistry = new HashMap<>();
+        
+        // 2. Put key-value pairs into Map
+        userRegistry.put("user_101", "Mahesh");
+        userRegistry.put("user_102", "Sam");
+        
+        // 3. Search key with O(1) lookup time
+        String userName = userRegistry.getOrDefault("user_101", "Anonymous");
+        System.out.println("Retrieved Username: " + userName); // "Mahesh"
+        
+        // 4. Loop map structures
+        for (Map.Entry<String, String> entry : userRegistry.entrySet()) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+        }
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Interface References**: Always declare collection types using their parent interfaces (e.g. `List<String> items = new ArrayList<>()`).
+*   **Define Initial Capacity**: When using `HashMap` or `ArrayList` with known sizes, pass an initial capacity constructor argument to prevent array resizing overhead.
+*   **Override hashCode and equals**: When storing custom objects in `Set` or as `Map` keys, override `equals()` and `hashCode()` to prevent lookup conflicts.
+*   **Use immutable lists for constants**: Use `List.of()` or `Collections.unmodifiableList()` to declare read-only collections.
+
+---
+
+## Common Mistakes
+
+*   **Using LinkedList by default**: Using `LinkedList` under the assumption that it is always faster than `ArrayList`. `ArrayList` is faster in almost all common cases due to CPU cache locality.
+*   **Modifying collections during iteration**: Modifying a collection inside a standard loop, which throws a `ConcurrentModificationException`. Use an iterator or `removeIf()` instead.
+*   **Incorrect hashCode implementations**: Failing to update hashcode math when custom properties of a class are modified, losing references inside `HashMap` lookups.
+
+<Callout type="warning" title="Thread Safety">
+  Default collections (like `ArrayList`, `HashSet`, and `HashMap`) are not thread-safe. For multithreaded applications, use concurrent structures like `ConcurrentHashMap` or `CopyOnWriteArrayList`.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Lists store items in order; Sets store unique items; Maps store key-value pairs.
+*   ArrayLists outperform LinkedLists due to contiguous memory allocation.
+*   Override `equals` and `hashCode` when using custom objects as Map keys.
+*   Use concurrent structures inside multithreaded pipelines to prevent race conditions.

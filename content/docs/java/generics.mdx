@@ -1,14 +1,89 @@
 ---
 title: "Generics"
-description: "Learn about Generics in our comprehensive Full Stack Guide."
+description: "Master Java generics, type parameters, bounded wildcards, and compilation type erasures."
 ---
 
 # Generics
 
-Welcome to the section on **Generics**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Generics.
+Java Generics enable classes, interfaces, and methods to operate on parameterized types. Introduced in Java 5, generics allow developers to write reusable code while providing compile-time type safety, eliminating the need for manual type casting.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding type parameters, wildcards, and compilation type erasure is key to generic library design.
+
+### Compile-Time Type Safety
+Without generics, collections stored raw Objects, requiring manual casting on retrieval. Generics catch type mismatches at compile time, reducing runtime casting exceptions:
+```java
+List<String> list = new ArrayList<>();
+list.add("Java");
+String name = list.get(0); // No casting required
+```
+
+### Wildcards: ?, extends, and super
+Wildcards allow you to define flexible generic methods:
+-   **`<? extends T>` (Upper Bound)**: Accepts any type that is a subclass of `T` (read-only operations).
+-   **`<? super T>` (Lower Bound)**: Accepts any type that is a superclass of `T` (write operations).
+
+### Type Erasure
+Java implements generics using **type erasure** to maintain backwards compatibility with older Java code. The compiler replaces all type parameters with their bounds (or `Object` if unbounded) during compilation. Consequently, generic type information is not available at runtime.
+
+---
+
+## Code Example
+
+Here is an implementation of a generic class and a method with upper-bounded wildcards:
+
+```java
+package com.devdocs.generics;
+
+import java.util.List;
+
+// 1. Generic Box Container
+class Box<T> {
+    private T content;
+
+    public void set(T content) { this.content = content; }
+    public T get() { return content; }
+}
+
+public class GenericsApp {
+    // 2. Wildcard method allowing read operations on sub-numbers
+    public static double sumOfList(List<? extends Number> list) {
+        double sum = 0.0;
+        for (Number num : list) {
+            sum += num.doubleValue();
+        }
+        return sum;
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use PECS Rule (Producer Extends, Consumer Super)**: Use `? extends` when reading data from a collection, and `? super` when writing data to a collection.
+*   **Avoid Raw Types**: Never declare generic classes without type parameters (e.g. avoid `List list = new ArrayList()`). This disables compiler type checks.
+*   **Prefer Generic Methods**: Use generic methods instead of class-level parameters when a generic type is only required by a single method.
+*   **Enforce parameter safety**: Set explicit type bounds (e.g. `<T extends Comparable<T>>`) to restrict parameter types.
+
+---
+
+## Common Mistakes
+
+*   **Using raw types in new code**: Declaring collections without type parameters, losing compile-time type safety.
+*   **Expecting runtime type availability**: Attempting to use `instanceof` with generic types (e.g. `obj instanceof T`), which fails because type parameters are erased at compile time.
+*   **Creating arrays of generic types**: Attempting to initialize generic arrays (e.g. `new T[10]`), which is prohibited in Java due to type safety constraints.
+
+<Callout type="warning" title="Type Erasure Runtime Limits">
+  Because of type erasure, you cannot use generic parameters in runtime expressions (like `new T()`, `new T[10]`, or `T.class`). If you need runtime type info, pass an explicit Class object (e.g. `Class<T> clazz`) to the constructor.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Generics provide compile-time type safety and eliminate manual type casting.
+*   Upper-bounded wildcards (`? extends T`) allow read-only access to sub-types.
+*   Lower-bounded wildcards (`? super T`) allow write access to parent types.
+*   Type parameters are erased during compilation to maintain backwards compatibility.

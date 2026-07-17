@@ -1,14 +1,80 @@
 ---
 title: "Selectors & Specificity"
-description: "Learn about Selectors & Specificity in our comprehensive Full Stack Guide."
+description: "Master CSS selectors, class and ID targeting, and the specificity scoring engine."
 ---
 
 # Selectors & Specificity
 
-Welcome to the section on **Selectors & Specificity**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Selectors & Specificity.
+CSS Selectors are rules used to target specific HTML elements to apply styles. When multiple selectors conflict on a single element, the browser's **Specificity Engine** computes a mathematical weight score to decide which styles override the others.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding selector types and specificity scores prevents CSS styles override bugs.
+
+### Core Selector Types
+-   **Element Selector**: Targets tags directly (e.g. `body`, `h1`). Lowest specificity.
+-   **Class Selector**: Targets class attributes (e.g. `.btn-primary`).
+-   **ID Selector**: Targets unique IDs (e.g. `#main-header`). Highly specific.
+-   **Attribute Selector**: Targets attributes values (e.g. `[type="text"]`).
+
+### Specificity Calculation Hierarchy
+Specificity is calculated using a four-digit scoring vector (Inline, ID, Class, Element):
+1.  **Inline Styles**: Score `(1, 0, 0, 0)`.
+2.  **IDs**: Score `(0, 1, 0, 0)`.
+3.  **Classes & Pseudo-classes**: Score `(0, 0, 1, 0)`.
+4.  **Elements & Pseudo-elements**: Score `(0, 0, 0, 1)`.
+
+If specificity scores match, the rule defined lowest (last) in the stylesheet wins.
+
+---
+
+## Code Example
+
+Here is an example demonstrating conflicting selectors and how specificity scores dictate the final color:
+
+```css
+/* Specificity: (0, 0, 0, 1) - Element selector (Green) */
+button {
+    background-color: #22c55e;
+}
+
+/* Specificity: (0, 0, 1, 0) - Class selector (Blue - Overrides Button) */
+.action-btn {
+    background-color: #3b82f6;
+}
+
+/* Specificity: (0, 1, 0, 0) - ID selector (Red - Overrides Class) */
+#submit-action {
+    background-color: #ef4444;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Classes**: Build your stylesheet styling entirely around reusable classes rather than absolute IDs.
+*   **Avoid Deep Selector Chaining**: Keep selectors shallow (e.g. `.nav-item` rather than `body header nav ul li a`). Deep chains slow down style computations.
+*   **Do Not Use !important**: Avoid forcing overrides using `!important`. Fix style conflicts by modifying selector specificity or reorganizing styles order.
+*   **Group Related Selectors**: Group related selectors (like primary and secondary buttons) to share common styles.
+
+---
+
+## Common Mistakes
+
+*   **Using IDs for styling grids**: Styling reusable components using IDs (e.g. `#my-card`), which prevents you from reusing the styles elsewhere.
+*   **Forgetting spacing in nested selectors**: Writing `.card.title` (selects element containing *both* classes) instead of `.card .title` (selects child `.title` nested inside `.card`).
+*   **Adding !important as a lazy fix**: Adding `!important` to resolve a layout bug, which creates styles override locks that are hard to debug later.
+
+<Callout type="warning" title="The !important Exception">
+  An `!important` tag overrides all standard specificity rules. The only way to override an `!important` rule is to write another, more specific selector that also contains `!important`.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Specificity is computed using a hierarchy: Inline styles > IDs > Classes > Element selectors.
+*   Keep CSS rules reusable by styling via class selectors rather than IDs.
+*   Keep selectors shallow to speed up browser stylesheet parsing.
+*   Use `!important` only as a last resort in utility classes.

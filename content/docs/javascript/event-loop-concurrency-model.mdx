@@ -1,14 +1,79 @@
 ---
 title: "Event Loop & Concurrency Model"
-description: "Learn about Event Loop & Concurrency Model in our comprehensive Full Stack Guide."
+description: "Understand JavaScript's single-threaded concurrency model, Call Stack, Task Queue, and Microtask Queue."
 ---
 
 # Event Loop & Concurrency Model
 
-Welcome to the section on **Event Loop & Concurrency Model**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Event Loop & Concurrency Model.
+JavaScript is a single-threaded language, meaning it has a single call stack and can only do one thing at a time. The **Event Loop** is the mechanism that manages this single thread, enabling concurrency by delegating asynchronous tasks to the browser or system APIs.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the Event Loop is essential for preventing UI blocking and optimizing performance.
+
+### The Event Loop Architecture Components
+-   **Call Stack**: Tracks the current function execution order. Operates on a Last-In, First-Out (LIFO) model.
+-   **Web APIs / Node APIs**: Browser or system threads that handle async tasks (like `setTimeout`, fetch, or DOM listeners) in the background.
+-   **Task Queue (Macrotasks)**: Holds completed callback functions from timers and user events, waiting to be pushed onto the stack.
+-   **Microtask Queue**: Holds completed callback functions from Promises, queueMicrotask, and MutationObservers. Has higher priority than the Task Queue.
+
+### How the Event Loop Works
+The Event Loop continually checks if the Call Stack is empty. If it is, it processes the entire Microtask Queue first, then picks the oldest callback from the Task Queue (Macrotasks) and pushes it onto the Call Stack to execute.
+
+---
+
+## Code Example
+
+Here is an example demonstrating the execution order of synchronous code, promises (microtasks), and timers (macrotasks):
+
+```javascript
+console.log('1. Start Sync');
+
+// Macrotask (Task Queue)
+setTimeout(() => {
+    console.log('2. Timeout Macrotask');
+}, 0);
+
+// Microtask (Promise Queue)
+Promise.resolve().then(() => {
+    console.log('3. Promise Microtask');
+});
+
+console.log('4. End Sync');
+
+// Output execution order:
+// 1. Start Sync
+// 4. End Sync
+// 3. Promise Microtask  (Runs immediately after stack clears, before timers)
+// 2. Timeout Macrotask (Runs after microtasks queue is completely empty)
+```
+
+---
+
+## Best Practices
+
+*   **Never Block the Call Stack**: Avoid running heavy calculations (like deep loops) synchronously on the main thread, as this freezes the UI.
+*   **Use Web Workers for Heavy Tasks**: Offload CPU-heavy calculations to Web Workers to run them on separate threads.
+*   **Leverage queueMicrotask for Priority**: Use `queueMicrotask` to schedule high-priority async callbacks that must execute before the browser repaints the layout.
+*   **Keep Callbacks Short**: Ensure callback functions are small to allow the event loop to yield to rendering frames frequently.
+
+---
+
+## Common Mistakes
+
+*   **Expecting setTimeout 0 to run immediately**: Assuming `setTimeout(fn, 0)` executes instantly, when it actually waits for the call stack and all pending microtasks to clear first.
+*   **Running CPU-intensive loops on the main thread**: Writing loops that block user interactions and cause "Page Unresponsive" browser alerts.
+*   **Confusing microtasks and macrotasks order**: Assuming promise resolves and timeout callbacks share the same queue priority.
+
+<Callout type="note" title="Rendering updates">
+  The browser updates rendering layouts between Event Loop cycles. Blocking the stack prevents rendering, causing page freezes.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JavaScript is single-threaded, but delegates async tasks to background web APIs.
+*   The Event Loop moves tasks to the call stack only when the stack is empty.
+*   The Microtask Queue (Promises) has priority over the Task Queue (setTimeout).
+*   Do not block the call stack; offload heavy computations to background threads.

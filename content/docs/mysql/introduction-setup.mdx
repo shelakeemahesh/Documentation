@@ -1,14 +1,72 @@
 ---
 title: "Introduction & Setup"
-description: "Learn about Introduction & Setup in our comprehensive Full Stack Guide."
+description: "Configure your local environment with MySQL Server, connect via command-line, and understand client-server architecture."
 ---
 
 # Introduction & Setup
 
-Welcome to the section on **Introduction & Setup**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction & Setup.
+MySQL is the world's most popular open-source relational database management system (RDBMS). It is a key component of modern backend stacks, offering high performance, security, and transaction reliability through its default ACID-compliant InnoDB engine.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding database engine layers and installation paths is essential for backend engineering.
+
+### Relational Database Management System (RDBMS)
+An RDBMS stores data in structured tables consisting of rows and columns. It enforces schema constraints, primary key uniqueness, and referential integrity using foreign keys.
+
+### The Client-Server Architecture
+-   **MySQL Server (Daemon: mysqld)**: The background database engine that manages data files, executes SQL queries, and coordinates locks.
+-   **MySQL Client (mysql CLI)**: Command-line tool or graphical IDE (like DBeaver or MySQL Workbench) used to send SQL commands to the server.
+
+---
+
+## Code Example
+
+Here is the standard terminal command configuration to install MySQL and connect using the CLI client:
+
+```bash
+# 1. Install MySQL Server on macOS via Homebrew
+brew install mysql
+
+# 2. Start MySQL background service daemon
+brew services start mysql
+
+# 3. Connect to server shell using root client
+mysql -u root -p
+```
+
+Inside the MySQL CLI prompt, view database environments:
+```sql
+-- View current database schemas
+SHOW DATABASES;
+```
+
+---
+
+## Best Practices
+
+*   **Use InnoDB Storage Engine**: Always use the default InnoDB engine. It provides transaction safety (ACID compliance) and row-level locking, unlike legacy MyISAM.
+*   **Run Security Scripts**: Run `mysql_secure_installation` immediately after installing to disable anonymous logins and secure the root password.
+*   **Configure Standard Ports**: Bind MySQL to standard port `3306` inside isolated private networks, disabling external access.
+*   **Manage Users Granularly**: Avoid running application queries using the `root` administrative user. Create specific users with restricted database grants.
+
+---
+
+## Common Mistakes
+
+*   **Bypassing security scripts**: Running MySQL server in production without setting root passwords, leaving databases vulnerable to intrusions.
+*   **Using legacy MyISAM engine**: Restoring databases using MyISAM tables, which lacks transaction safety and locks entire tables on updates.
+*   **Exposing port 3306 publicly**: Opening port `3306` directly to the internet, inviting brute-force attack attempts.
+
+<Callout type="note" title="Default Engine Changed">
+  Starting with MySQL 5.5, the storage engine defaults to InnoDB, providing crash recovery, transactional integrity, and foreign key support.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   MySQL Server manages data storage; clients query it using SQL.
+*   InnoDB is the industry standard engine for ACID-compliant transactions.
+*   Secure your installation immediately using `mysql_secure_installation`.
+*   Restrict application access by creating dedicated users with limited permissions.

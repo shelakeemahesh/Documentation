@@ -1,14 +1,84 @@
 ---
-title: "Media Elements (img, video, audio)"
-description: "Learn about Media Elements (img, video, audio) in our comprehensive Full Stack Guide."
+title: "Media Elements"
+description: "Implement responsive images, audio tracks, and HTML5 video players using native tags."
 ---
 
-# Media Elements (img, video, audio)
+# Media Elements
 
-Welcome to the section on **Media Elements (img, video, audio)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Media Elements (img, video, audio).
+Modern web layouts rely on media elements to serve images, audio, and videos. To optimize loading speeds and ensure accessibility, you must configure media elements with responsive source formats and fallback tracks.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding media compression and responsive formats is essential for asset optimization.
+
+### Responsive Images: srcset and picture
+Using a single large image for all screen sizes wastes bandwidth on mobile devices.
+-   **`srcset`**: Allows you to define a list of image sources with matching widths, letting the browser download the correct size dynamically.
+-   **`<picture>`**: A wrapper that accepts multiple `<source>` tags, enabling art direction (serving different crops or formats like WebP/AVIF based on screen size).
+
+### HTML5 Audio and Video
+Before HTML5, browsers required external plugins (like Flash) to play audio and video. Native `<video>` and `<audio>` tags play media directly, using standardized controls and event APIs.
+
+---
+
+## Code Example
+
+Here is a responsive picture layout that serves modern AVIF/WebP formats with standard fallback, and a video player layout:
+
+```html
+<!-- 1. Responsive Picture Element -->
+<picture>
+    <!-- Server modern high-compression formats -->
+    <source srcset="/images/hero-large.avif 1200w, /images/hero-medium.avif 800w" type="image/avif" />
+    <source srcset="/images/hero-large.webp 1200w, /images/hero-medium.webp 800w" type="image/webp" />
+    
+    <!-- Standard JPEG fallback -->
+    <img
+        src="/images/hero-fallback.jpg"
+        alt="Developer team collaborating on system design"
+        loading="lazy"
+        class="w-full h-auto rounded-lg"
+    />
+</picture>
+
+<!-- 2. HTML5 Video Player with Captions -->
+<video controls width="640" height="360" poster="/videos/intro-poster.jpg" class="w-full rounded-lg">
+    <source src="/videos/intro.mp4" type="video/mp4" />
+    <source src="/videos/intro.webm" type="video/webm" />
+    
+    <!-- Accessibility caption track (VTT format) -->
+    <track src="/videos/captions-en.vtt" kind="captions" srclang="en" label="English" default />
+    
+    <p>Your browser does not support HTML5 video. Here is a <a href="/videos/intro.mp4">link to the video</a>.</p>
+</video>
+```
+
+---
+
+## Best Practices
+
+*   **Always Add Alt Text**: Every `<img>` tag must have an `alt` attribute to explain the visual contents.
+*   **Enable Lazy Loading**: Use the `loading="lazy"` attribute on off-screen images to delay loading them until they are scrolled into view, saving user bandwidth.
+*   **Provide explicit dimensions**: Declare `width` and `height` attributes on image and video tags to prevent layout shifts (CLS) as assets load.
+*   **Use Modern Formats**: Serve images in modern formats like WebP or AVIF, which reduce file sizes by up to 30%–50% compared to JPEG.
+
+---
+
+## Common Mistakes
+
+*   **Omitting fallback sources**: Providing only a WebP source inside a picture, which breaks rendering on older legacy browsers that do not support WebP.
+*   **Using autoPlay silently**: Setting `autoplay` on video tracks without the `muted` attribute, causing browsers to block autoplay behavior.
+*   **Ignoring accessibility captions**: Hosting instructional videos without providing a `<track>` caption file, leaving deaf and hard-of-hearing users without context.
+
+<Callout type="tip" title="Image Decoding Performance">
+  For above-the-fold images (like landing page heroes), add `fetchpriority="high"` and disable lazy loading to tell the browser to fetch and render the image immediately.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Use the `<picture>` tag to serve modern AVIF formats and custom crop layouts.
+*   Always include the `loading="lazy"` attribute on below-the-fold images to improve loading speed.
+*   Declare explicit image dimensions to prevent Cumulative Layout Shifts.
+*   Provide VTT caption tracks inside `<video>` tags for accessibility.

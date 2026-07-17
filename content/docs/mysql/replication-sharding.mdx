@@ -1,14 +1,68 @@
 ---
 title: "Replication & Sharding"
-description: "Learn about Replication & Sharding in our comprehensive Full Stack Guide."
+description: "Scale databases horizontally using Master-Slave replication, Multi-Master clustering, and data sharding."
 ---
 
 # Replication & Sharding
 
-Welcome to the section on **Replication & Sharding**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Replication & Sharding.
+As backend systems scale, single database instances eventually hit CPU and storage limits. To handle high traffic, databases use **Replication** (replicating updates to multiple read instances) or **Sharding** (partitioning data horizontally across separate database hosts).
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding database scaling strategies and sharding methods is key to system design.
+
+### Primary-Replica Replication (Master-Slave)
+-   **Primary Node (Master)**: Handles all write operations (`INSERT`, `UPDATE`, `DELETE`). Writes are logged to the binary log (`binlog`).
+-   **Replica Nodes (Slaves)**: Read updates from the master's binlog asynchronously and apply them locally. Replicas handle read-only queries (`SELECT`), scaling read throughput horizontally.
+-   **Replication Lag**: The delay between a write on the master and its replication to a replica. Can cause out-of-sync reads.
+
+### Database Sharding (Horizontal Partitioning)
+Sharding divides a massive table horizontally, routing rows to separate database servers based on a **sharding key** (e.g., routing users by country or ID). This divides storage and processing loads across multiple machines, scaling writes horizontally.
+
+---
+
+## Code Example
+Here is an example demonstrating the database configurations required to enable Primary-Replica replication:
+
+```ini
+# 1. Primary server configurations (my.cnf)
+[mysqld]
+server-id        = 1
+log-bin          = mysql-bin          # Enable binary logging for replication
+binlog_do_db     = user_db            # Target database to replicate
+
+# 2. Replica server configurations (my.cnf)
+[mysqld]
+server-id        = 2
+relay-log        = mysql-relay-bin    # Enable relay logging for replica updates
+read_only        = 1                  # Force replica into read-only mode
+```
+
+---
+
+## Best Practices
+*   **Enforce Read-Only on Replicas**: Always set `read_only = 1` on replicas to prevent data divergence with the master.
+*   **Choose the Sharding Key Carefully**: Select a high-cardinality sharding key (like `user_id`) to distribute data evenly across shards.
+*   **Use GTID (Global Transaction Identifier)**: Enable GTID replication in modern MySQL clusters to simplify replica failover management.
+*   **Monitor Replication Lag**: Set up monitoring alerts for replication lag to prevent stale reads on replica nodes.
+
+---
+
+## Common Mistakes
+
+*   **Writing directly to replica nodes**: Executing updates on replicas, causing data divergence and breaking replication synchronizations.
+*   **Selecting low-cardinality sharding keys**: Sharding by fields with few variations (like `gender`), creating hot spot shards that handle all traffic.
+*   **Ignoring replication lag during immediate reads**: Writing to the master and reading from a replica immediately, displaying stale data to users.
+
+<Callout type="warning" title="Sharding Complexity">
+  Sharding adds significant complexity: cross-shard joins and distributed transactions are difficult to execute. Implement sharding only when database writes exceed single-instance CPU capacities.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Primary-Replica replication scales reads horizontally; sharding scales writes horizontally.
+*   Replicas read updates asynchronously from the master's binary log.
+*   Set replicas to read-only mode to prevent data inconsistencies.
+*   Select a high-cardinality sharding key to distribute data evenly across shards.

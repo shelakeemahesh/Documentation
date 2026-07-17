@@ -1,14 +1,74 @@
 ---
 title: "Box Model"
-description: "Learn about Box Model in our comprehensive Full Stack Guide."
+description: "Understand the CSS box model, including margins, borders, padding, and box-sizing control."
 ---
 
 # Box Model
 
-Welcome to the section on **Box Model**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Box Model.
+The CSS Box Model is the core formatting rules engine of the web. Every visible element on a web page is treated as a rectangular box. The browser computes the size and placement of these boxes based on their content, padding, border, and margin parameters.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding box layers is essential for configuring element widths and heights accurately.
+
+### The Four Box Model Layers
+1.  **Content**: The actual text, images, or child elements. Controlled by `width` and `height` properties.
+2.  **Padding**: Transparent space surrounding the content, nested inside the border. Inherits background colors.
+3.  **Border**: The boundary line wrapping the padding and content (e.g. `border: 1px solid black`).
+4.  **Margin**: Transparent space outside the border, separating the element from sibling boxes.
+
+### The box-sizing Property
+-   **`content-box` (Default)**: The browser adds padding and borders to the declared width. If width is `100px` with `20px` padding, the physical rendered width is `140px`.
+-   **`border-box` (Recommended)**: The browser includes padding and borders inside the declared width. If width is `100px`, the physical width remains `100px`, and the content area shrinks to accommodate padding.
+
+---
+
+## Code Example
+
+Here is an example demonstrating the box-sizing reset and a card element using padding, borders, and margins:
+
+```css
+/* Global Box Model Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Card box using the model rules */
+.profile-card {
+    width: 320px;          /* Physical rendering width is locked to 320px */
+    padding: 24px;         /* Space inside border boundary */
+    border: 2px solid #27272a;
+    margin: 16px;          /* Space separating cards */
+    background-color: #09090b;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Apply border-box Globally**: Always include a global box model reset using `box-sizing: border-box` to make width calculations predictable.
+*   **Use margin-top or margin-bottom consistently**: Use a single direction for vertical margins (e.g. only use `margin-bottom` on text elements) to prevent margin collapse conflicts.
+*   **Use Padding for Inner Space**: Never use margins to push content inward inside a border wrapper; always use padding.
+*   **Keep Content Box Size in Mind**: Ensure responsive container heights are not blocked by absolute padding parameters.
+
+---
+
+## Common Mistakes
+
+*   **Not resetting content-box**: Forgetting the global `border-box` reset, leading to layouts breaking when adding padding or borders to inputs or layout boxes.
+*   **Expecting vertical margins to add up**: Forgetting that adjacent vertical margins collapse into a single margin (equal to the larger of the two margins).
+*   **Using width: 100% with padding on content-box**: Creating horizontal page overflow scrolls because padding pushes container width beyond 100% viewports.
+
+<Callout type="note" title="Margin Collapsing">
+  Adjacent vertical margins collapse into a single space in the block flow. Horizontal margins never collapse.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Every HTML element renders as a rectangular box.
+*   The box model consists of Content, Padding, Border, and Margin.
+*   Apply `box-sizing: border-box` globally to make layout sizing predictable.
+*   Vertical margins between adjacent boxes collapse into a single value.

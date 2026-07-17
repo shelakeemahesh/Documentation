@@ -1,14 +1,68 @@
 ---
 title: "Introduction & Setup"
-description: "Learn about Introduction & Setup in our comprehensive Full Stack Guide."
+description: "Initialize your first Spring Boot 3.x application using Spring Initializr."
 ---
 
 # Introduction & Setup
 
-Welcome to the section on **Introduction & Setup**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction & Setup.
+Spring Boot is an open-source, Java-based framework used to create microservices and stand-alone backend applications. By eliminating standard Spring configuration boilerplate through starter dependencies and auto-configuration, Spring Boot enables developers to bootstrap production-ready applications in seconds.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding starter dependencies and auto-configuration is essential for Spring Boot development.
+
+### Starter Dependencies
+Starters are a set of convenient dependency descriptors you can include in your application. For example, including `spring-boot-starter-web` automatically pulls in all dependencies required to build web APIs, including the embedded Tomcat servlet container.
+
+### Opinionated Auto-Configuration
+Spring Boot attempts to configure your Spring application automatically based on the jar dependencies you add. For example, if `h2` database is on your classpath, Spring Boot configures an in-memory database connection pool automatically without requiring manual configuration beans.
+
+---
+
+## Code Example
+
+Here is the standard entry point of a Spring Boot 3.x application (`DemoApplication.java`):
+
+```java
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication // Combines Configuration, AutoConfiguration, and ComponentScan
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Spring Initializr**: Always scaffold new projects via `start.spring.io` to fetch correct starter version mappings.
+*   **Prefer YAML Configurations**: Use `application.yml` instead of `application.properties` to write structured, readable configurations.
+*   **Follow Package Conventions**: Place your main application class in the root package to ensure component scanning registers all sub-package components correctly.
+*   **Keep Dependencies Minimal**: Avoid adding unused starters to keep your application runtime lightweight.
+
+---
+
+## Common Mistakes
+
+*   **Placing main class in wrong package**: Locating the `@SpringBootApplication` class in a sub-package, preventing it from scanning sister packages.
+*   **Manually configuring database beans unnecessarily**: Writing custom connection pool configuration code when Spring Boot handles it automatically.
+*   **Mixing starter version configurations**: Explicitly declaring version numbers on starter dependencies in `pom.xml`, overriding Spring Boot parent POM mappings.
+
+<Callout type="note" title="Embedded Tomcat Server">
+  Spring Boot packages your application into an executable fat JAR containing an embedded Tomcat server, eliminating the need to deploy WAR files to external server containers.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Spring Boot uses starter dependencies to bundle related library dependencies.
+*   Auto-configuration configures application beans automatically based on class paths.
+*   Place the main class in the root package to ensure correct component scanning.
+*   Use parent POM versions inheritance to manage dependency compatibility.

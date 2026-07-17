@@ -1,14 +1,74 @@
 ---
-title: "Variables, Types, Operators"
-description: "Learn about Variables, Types, Operators in our comprehensive Full Stack Guide."
+title: "Variables, Types & Operators"
+description: "Understand variables bindings, dynamic data typing, and comparison operations."
 ---
 
-# Variables, Types, Operators
+# Variables, Types & Operators
 
-Welcome to the section on **Variables, Types, Operators**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Variables, Types, Operators.
+JavaScript is a dynamically typed language. Understanding how variables are declared, how types are evaluated, and how operators perform operations is fundamental to writing bug-free logic.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Mastering bindings, coercion, and operators prevents unexpected logic evaluations.
+
+### Variable Declarations: let, const, and var
+-   **`const`**: Declares a read-only, block-scoped binding that cannot be reassigned.
+-   **`let`**: Declares a mutable, block-scoped variable.
+-   **`var`**: Legacy function-scoped binding that is hoisted, which often causes scope bugs.
+
+### JavaScript Type Hierarchy
+-   **Primitives (Passed by Value)**: `Number`, `String`, `Boolean`, `Undefined`, `Null`, `Symbol`, `BigInt`.
+-   **Objects (Passed by Reference)**: Arrays, Object Literals, and Functions.
+
+### Equality Operators
+-   **Loose Equality (`==`)**: Performs type coercion before comparing values (e.g. `5 == "5"` is true).
+-   **Strict Equality (`===`)**: Compares both value and type without coercion (e.g. `5 === "5"` is false). Always use strict equality.
+
+---
+
+## Code Example
+
+Here is an example demonstrating reference mutations and comparison operators:
+
+```javascript
+// 1. Primitive vs Reference Types
+let countA = 10;
+let countB = countA; // Passed by value
+countB = 20;
+console.log(countA); // Still 10
+
+const userA = { name: 'Mahesh' };
+const userB = userA; // Passed by reference
+userB.name = 'Sam';
+console.log(userA.name); // Changed to 'Sam'!
+```
+
+---
+
+## Best Practices
+
+*   **Default to const**: Always declare variables with `const`. Only use `let` if re-assignment is required.
+*   **Avoid var**: Never use `var` in modern JavaScript.
+*   **Always use ===**: Use strict equality (`===`) and strict inequality (`!==`) to prevent coercion bugs.
+*   **Check for Null/Undefined Safely**: Use optional chaining (`?.`) and nullish coalescing (`??`) to handle missing properties.
+
+---
+
+## Common Mistakes
+
+*   **Mutating const objects**: Assuming `const` makes object properties immutable. It only prevents reference reassignment.
+*   **Relying on loose equality**: Comparing values with `==`, leading to hidden bugs like `"" == 0` evaluating to true.
+*   **Confusing null and undefined**: Treating them as identical, when `undefined` means a variable is uninitialized, and `null` is an intentional empty value.
+
+<Callout type="warning" title="Type Coercion">
+  JavaScript converts types automatically when operators collide (e.g. `1 + "2"` evaluates to `"12"`). Use explicit conversion functions like `Number()` to keep operations predictable.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `const` and `let` are block-scoped; `var` is function-scoped and hoisted.
+*   Primitive types are copied by value; object types are copied by reference.
+*   Always compare values using strict equality (`===`).
+*   Use `Object.freeze()` to make object properties immutable.

@@ -1,14 +1,76 @@
 ---
 title: "ES6+ Features"
-description: "Learn about ES6+ Features in our comprehensive Full Stack Guide."
+description: "Explore modern JavaScript features including destructuring, spread/rest syntax, and templates."
 ---
 
 # ES6+ Features
 
-Welcome to the section on **ES6+ Features**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for ES6+ Features.
+ECMAScript 2015 (ES6) and subsequent updates introduced major enhancements to JavaScript. These additions replaced legacy patterns, made code cleaner and more readable, and modernized how variables, objects, and arrays are handled.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding modern language syntax additions is key to writing idiomatic JavaScript.
+
+### Destructuring Assignment
+Allows you to unpack values from arrays or properties from objects into distinct variables in a single, clean expression:
+```javascript
+const user = { name: 'Mahesh', age: 25 };
+const { name, age } = user; // Instantly extract properties
+```
+
+### Spread & Rest Syntax (...)
+-   **Spread Operator**: Unpacks arrays or objects into individual elements (e.g. shallow cloning objects, combining arrays).
+-   **Rest Parameter**: Gathers multiple arguments into a single array parameter inside function definitions.
+
+### Template Literals
+Uses backticks (`` ` ``) instead of double quotes, allowing inline string interpolation and multi-line strings without needing manual escape characters.
+
+---
+
+## Code Example
+
+Here is an example demonstrating modern spread cloning, rest parameters, and object destructuring:
+
+```javascript
+// 1. Rest Parameter inside function
+function sumAll(...numbers) {
+    return numbers.reduce((sum, num) => sum + num, 0);
+}
+console.log(sumAll(1, 2, 3, 4)); // 10
+
+// 2. Object Shallow Clone and Property Merging
+const originalProfile = { username: 'Mahesh', verified: true };
+const updatedProfile = { ...originalProfile, verified: false, score: 95 };
+console.log(updatedProfile.username); // "Mahesh"
+console.log(updatedProfile.verified); // false
+```
+
+---
+
+## Best Practices
+
+*   **Use Destructuring for Config objects**: Use destructuring in function parameter lists to easily parse option configurations.
+*   **Use Arrow Functions by Default**: Write compact arrow functions for anonymous callbacks.
+*   **Prefer Spread for Shallow Copying**: Use `{ ...obj }` and `[ ...arr ]` to clone objects and arrays without mutating the original reference.
+*   **Leverage Template Literals**: Write clean interpolated strings rather than concatenating variables using `+` string operators.
+
+---
+
+## Common Mistakes
+
+*   **Expecting deep copy cloning from spread operators**: Forgetting that the spread operator (`...`) only performs a shallow copy, leaving nested object references shared.
+*   **Confusing Rest and Spread**: Using spread syntax when you want to group arguments inside a function definition, or using rest syntax when you want to unpack values.
+*   **Over-destructuring deeply nested objects**: Destructuring objects 4–5 levels deep in a single statement, which makes code hard to read and fragile if properties are missing.
+
+<Callout type="note" title="Optional Chaining Integration">
+  Combine destructuring with optional chaining (`?.`) and default parameters to prevent runtime exceptions when parsing nested API payloads.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Destructuring extracts variables from objects and arrays cleanly.
+*   The `...` syntax functions as a rest parameter when gathering arguments, and a spread operator when unpacking elements.
+*   Template literals enable string interpolation using backticks.
+*   Spread copies values shallowly; deep copying requires structured cloning.

@@ -1,14 +1,73 @@
 ---
 title: "Joins & Subqueries"
-description: "Learn about Joins & Subqueries in our comprehensive Full Stack Guide."
+description: "Master SQL queries joins, subqueries, and execution query performance."
 ---
 
 # Joins & Subqueries
 
-Welcome to the section on **Joins & Subqueries**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Joins & Subqueries.
+Relational databases partition data across separate tables to prevent redundancy. To query data, backend developers use SQL **Joins** to combine tables on foreign keys or use **Subqueries** to execute nested searches.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding join types and subquery execution costs is key to query optimization.
+
+### Primary SQL Join Types
+-   **`INNER JOIN`**: Returns rows only when keys match in both tables.
+-   **`LEFT JOIN`**: Returns all rows from the left table and matching rows from the right table. Right columns default to `NULL` if no match is found.
+-   **`RIGHT JOIN`**: Perpendicular to LEFT JOIN, returning all rows from the right table.
+-   **`CROSS JOIN`**: Returns the Cartesian product of both tables, pairing every row in the first table with every row in the second.
+
+### Subqueries: Correlated vs. Non-Correlated
+-   **Non-Correlated Subquery**: Executed once independently. The outer query uses its output (e.g. `WHERE price > (SELECT AVG(price) FROM products)`).
+-   **Correlated Subquery**: References columns from the outer query, executing once for *every* row processed by the outer query. This is expensive and should be avoided.
+
+---
+
+## Code Example
+
+Here is an example demonstrating a LEFT JOIN query and a correlated subquery using `EXISTS`:
+
+```sql
+-- 1. LEFT JOIN: Fetch all customers and their orders (orders fields default to null if missing)
+SELECT c.id, c.email, o.amount 
+FROM customers c
+LEFT JOIN orders o ON c.id = o.customer_id;
+
+-- 2. Correlated Subquery: Find customers who have made orders above $500
+SELECT c.id, c.email 
+FROM customers c
+WHERE EXISTS (
+    SELECT 1 FROM orders o 
+    WHERE o.customer_id = c.id AND o.amount > 500.00
+);
+```
+
+---
+
+## Best Practices
+
+*   **Always Join on Indexed Columns**: Ensure the join condition columns (foreign keys) are indexed to prevent database engine table scans.
+*   **Prefer JOIN over Subqueries**: Join operations are optimized by the database compiler and perform better than nested subqueries.
+*   **Use LEFT JOIN instead of INNER JOIN with optional data**: Use `LEFT JOIN` when fetching parent elements that might not have child relations to prevent filtering out parent rows.
+*   **Always Qualify Columns**: Prefix column names with table aliases (e.g. `c.id` instead of `id`) in multi-table queries to prevent column collision errors.
+
+---
+
+## Common Mistakes
+
+*   **Accidentally triggering CROSS JOIN products**: Joining tables without defining join conditions, generating massive row combinations.
+*   **Writing correlated subqueries inside loops**: Creating query filters that evaluate subqueries repeatedly for every row in the outer query, slowing down performance.
+*   **Confusing LEFT and RIGHT join targets**: Swapping table orders in left/right joins, which filters out data unexpectedly.
+
+<Callout type="tip" title="Use EXISTS instead of IN">
+  When filtering data based on child relations, use `EXISTS` instead of `IN` for subqueries. `EXISTS` terminates the search as soon as the first match is found, saving processing overhead.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   SQL Joins merge related tables; subqueries nested search statements.
+*   Index join condition columns (foreign keys) to prevent slow table scans.
+*   Prefer JOIN operations over subqueries to benefit from database optimizations.
+*   Use `EXISTS` instead of `IN` to write high-performance subqueries.

@@ -1,14 +1,78 @@
 ---
 title: "DOM Manipulation & Events"
-description: "Learn about DOM Manipulation & Events in our comprehensive Full Stack Guide."
+description: "Interact with browser elements, update layouts, and handle event propagation."
 ---
 
 # DOM Manipulation & Events
 
-Welcome to the section on **DOM Manipulation & Events**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for DOM Manipulation & Events.
+The Document Object Model (DOM) is the API interface that represents HTML structures as a tree. JavaScript interacts with this API to dynamically update page structures, handle user inputs, and capture user events.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding DOM selections, node modifications, and event propagation flows is key to building interactive interfaces.
+
+### Querying and Modifying Nodes
+-   **`querySelector()`**: Finds the first element matching a CSS selector.
+-   **`querySelectorAll()`**: Returns a static NodeList of all matching elements.
+-   **Content Modifications**: Update nodes safely using `textContent` and class list controls rather than rewriting raw HTML strings.
+
+### Event Propagation: Bubbling and Capturing
+When an event fires on a nested element, it propagates through three phases:
+1.  **Capturing Phase**: The event travels down from the window to the target element.
+2.  **Target Phase**: The event fires on the clicked element.
+3.  **Bubbling Phase (Default)**: The event bubbles back up from the target element to the window. This allows you to set up event listeners on parent elements to catch clicks on their children (**Event Delegation**).
+
+---
+
+## Code Example
+
+Here is an implementation of **Event Delegation** on a list component, avoiding the need to set up listeners on individual list items:
+
+```javascript
+// Select parent list element
+const listContainer = document.querySelector('#product-list');
+
+// Listen on parent element (catches bubbling click events from children)
+listContainer.addEventListener('click', (event) => {
+    // Find the closest list item node clicked
+    const listItem = event.target.closest('li');
+    
+    if (listItem) {
+        const productId = listItem.dataset.id;
+        console.log(`Clicked product item: ${productId}`);
+        
+        // Stop default link navigation if needed
+        event.preventDefault();
+    }
+});
+```
+
+---
+
+## Best Practices
+
+*   **Use Event Delegation**: Attach a single event listener to a parent container instead of binding individual listeners to hundreds of child items.
+*   **Prefer textContent over innerHTML**: Avoid using `innerHTML` to update text, as it exposes your site to Cross-Site Scripting (XSS) attacks.
+*   **Use classList to Toggle Styles**: Update styles by toggling pre-written CSS classes (e.g. `element.classList.toggle('active')`) instead of modifying inline styles directly.
+*   **Remove Event Listeners**: Clean up global window scroll or resize event listeners when components unmount to prevent memory leaks.
+
+---
+
+## Common Mistakes
+
+*   **Using innerHTML with raw user input**: Injecting unsanitized input strings directly, which allows attackers to run malicious scripts in user browsers.
+*   **Forgetting to stop propagation on overlays**: Creating overlay modals where clicking the modal container triggers close events bound to the parent background.
+*   **Forgetting that NodeLists are not Arrays**: Attempting to call array methods (like `.map()` or `.reduce()`) on a static NodeList returned by `querySelectorAll()` without converting it first.
+
+<Callout type="tip" title="Event Options">
+  You can configure event listeners to run only once by passing the `{ once: true }` option object to `addEventListener`.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JavaScript manipulates HTML by interacting with the browser DOM tree.
+*   Events bubble up from nested targets to parent elements by default.
+*   Use Event Delegation to handle callbacks efficiently with minimal listeners.
+*   Update elements using `textContent` and class controls to prevent XSS attacks.

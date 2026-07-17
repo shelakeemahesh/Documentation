@@ -1,14 +1,102 @@
 ---
 title: "Animations & Transitions"
-description: "Learn about Animations & Transitions in our comprehensive Full Stack Guide."
+description: "Add micro-animations, transitions, and keyframe animations to enhance your UI."
 ---
 
 # Animations & Transitions
 
-Welcome to the section on **Animations & Transitions**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Animations & Transitions.
+CSS transitions and animations add visual interest and enhance user experience by providing smooth micro-animations. Transitions interpolate property changes smoothly over time, while keyframe animations allow you to create complex, multi-stage layout movements.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding hardware acceleration and easing functions is key to building performant animations.
+
+### CSS Transitions
+Transitions smoothly interpolate CSS values when an element changes states (e.g., hover or active states). You configure:
+-   `transition-property`: The property to animate (e.g. `opacity`, `transform`).
+-   `transition-duration`: The duration of the animation (e.g. `200ms`).
+-   `transition-timing-function`: The easing curve (e.g. `ease-in-out`, `cubic-bezier`).
+
+### CSS Animations & Keyframes
+Keyframes allow you to define style rules at specific percentages of the animation's timeline (from `0%` to `100%`), enabling looping animations and multi-stage movements.
+
+### Performance & Hardware Acceleration
+To prevent UI stutter, only animate properties that do not trigger browser re-flows or repaints. Focus on:
+-   **`transform`**: For scaling, rotating, and translation movements.
+-   **`opacity`**: For fade in and out states.
+These properties are offloaded to the GPU for hardware-accelerated, 60fps animations.
+
+---
+
+## Code Example
+
+Here is an implementation of a hover transition and a looping keyframe spinner:
+
+```css
+/* 1. Hover Transition for Card Card Hover */
+.interactive-card {
+    background-color: #18181b;
+    border: 1px solid #27272a;
+    transition: transform 200ms ease-out, border-color 200ms ease-out;
+}
+
+.interactive-card:hover {
+    border-color: #f59e0b; /* Change to amber-500 */
+    transform: translateY(-4px); /* Offloaded to GPU */
+}
+
+/* 2. Looping Keyframe Loading Spinner */
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #27272a;
+    border-top-color: #f59e0b;
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+        
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Animate transform and opacity**: Restrict your animations to `transform` and `opacity` to keep page rendering smooth and prevent lag.
+*   **Use transitions for Micro-interactions**: Keep transition times short (between 150ms and 300ms) to ensure UI response feels snappy.
+*   **Respect User Motion Settings**: Always wrap decorative animations inside the `prefers-reduced-motion` media query to support users with motion sensitivity.
+*   **Define Easing curves**: Avoid linear transitions for scaling or translation movements; use `ease-out` or custom `cubic-bezier` curves to mimic real-world physics.
+
+---
+
+## Common Mistakes
+
+*   **Animating layout properties**: Animating layout properties (like `height`, `width`, `top`, or `margin`), which forces the browser to recalculate the page layout (reflow) on every frame, degrading performance.
+*   **Setting transition times too long**: Setting duration triggers above 500ms for common interactions (like button hovers), which makes navigation feel laggy.
+*   **Forgetting to define transition properties**: Writing `transition: all 200ms`, which forces the browser to check and recalculate all properties on change. Explicitly name target properties instead.
+
+<Callout type="warning" title="Motion Accessibility">
+  Always respect accessibility preferences by disabling decorative animations for users who have requested reduced motion: 
+  ```css
+  @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+  }
+  ```
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Transitions interpolate properties; keyframe animations define custom looping steps.
+*   Keep transition durations under 300ms for snappy interactive elements.
+*   Animate only `transform` and `opacity` to benefit from hardware acceleration.
+*   Disable decorative animations when user media settings specify reduced motion.

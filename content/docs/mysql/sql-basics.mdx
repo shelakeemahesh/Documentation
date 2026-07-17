@@ -1,14 +1,79 @@
 ---
-title: "SQL Basics (CRUD)"
-description: "Learn about SQL Basics (CRUD) in our comprehensive Full Stack Guide."
+title: "SQL Basics"
+description: "Understand Data Definition Language (DDL) vs Data Manipulation Language (DML) and constraints configuration."
 ---
 
-# SQL Basics (CRUD)
+# SQL Basics
 
-Welcome to the section on **SQL Basics (CRUD)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for SQL Basics (CRUD).
+Structured Query Language (SQL) is the standardized language used to manage relational databases. SQL commands are split into distinct sub-languages based on their operational purpose.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding SQL definitions and constraints is key to schema design.
+
+### DDL vs. DML sub-languages
+-   **DDL (Data Definition Language)**: Defines and modifies database schemas and structures. Commands include `CREATE`, `ALTER`, and `DROP`.
+-   **DML (Data Manipulation Language)**: Queries and modifies database records. Commands include `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.
+
+### Schema Constraints
+-   **Primary Key (PK)**: Uniquely identifies each row in a table. Must be non-null and unique.
+-   **Foreign Key (FK)**: A column that references the primary key of another table, enforcing referential integrity.
+-   **Unique**: Guarantees that all values in a column are distinct.
+-   **Not Null**: Prevents null values from being inserted into a column.
+
+---
+
+## Code Example
+
+Here is an implementation of a relational schema design mapping `users` and `orders` tables:
+
+```sql
+-- 1. DDL: Create parent users table
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. DDL: Create child orders table containing foreign key mapping
+CREATE TABLE orders (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,
+    user_id BIGINT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 3. DML: Insert records into tables
+INSERT INTO users (email) VALUES ('mahesh@example.com');
+INSERT INTO orders (amount, user_id) VALUES (150.00, 1);
+```
+
+---
+
+## Best Practices
+
+*   **Always Define Auto-Increment IDs**: Use `AUTO_INCREMENT` or `UUID` values for primary keys to ensure identity uniqueness.
+*   **Use Decimal for Currency**: Always store financial values using the `DECIMAL` data type (e.g. `DECIMAL(10,2)`) to prevent floating-point rounding errors.
+*   **Declare Foreign Key Cascades**: Explicitly declare delete actions (like `ON DELETE CASCADE` or `SET NULL`) on foreign keys to maintain referential integrity.
+*   **Standardize Naming Conventions**: Use lowercase snake_case for database tables and column names to ensure cross-database compatibility.
+
+---
+
+## Common Mistakes
+
+*   **Using float for currency**: Storing prices or balances in `FLOAT` or `DOUBLE` columns, resulting in floating-point math rounding bugs.
+*   **Omitting not-null constraints**: Allowing columns (like emails or usernames) to accept null values, causing database indexing checks to fail.
+*   **Deleting parent rows without cascade checks**: Attempting to delete a parent row that still has child rows, throwing SQL integrity constraint violations.
+
+<Callout type="note" title="DDL Commits Automatically">
+  In MySQL, DDL statements (like `CREATE TABLE`) trigger implicit commits automatically. You cannot roll back DDL operations using transaction wrappers.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   DDL defines database schemas; DML manages database records.
+*   Primary Keys guarantee row identity uniqueness; Foreign Keys enforce referential integrity.
+*   Always use `DECIMAL` instead of `FLOAT` to store currency values.
+*   DDL statements commit automatically in MySQL and cannot be rolled back.

@@ -1,14 +1,87 @@
 ---
 title: "HQL & Criteria API"
-description: "Learn about HQL & Criteria API in our comprehensive Full Stack Guide."
+description: "Master query operations in Hibernate using HQL, JPQL, and type-safe Criteria query builders."
 ---
 
 # HQL & Criteria API
 
-Welcome to the section on **HQL & Criteria API**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for HQL & Criteria API.
+Hibernate provides multiple ways to query database records. In addition to native SQL queries, you can write database-agnostic object queries using **HQL (Hibernate Query Language)** or build type-safe dynamic queries using the **Criteria API**.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding query languages and dynamic query construction prevents SQL injection and query execution bugs.
+
+### HQL & JPQL Object Queries
+HQL operates on Java entities and properties rather than database tables and columns. This makes queries database-agnostic, meaning they compile automatically to the target SQL dialect of the active database (e.g. MySQL or PostgreSQL):
+```java
+// HQL query referencing Java class and field properties
+Query<User> query = session.createQuery("FROM User u WHERE u.email = :email", User.class);
+```
+
+### The Type-Safe Criteria API
+The Criteria API allows you to build dynamic queries programmatically using Java objects. This avoids syntax errors in raw query strings and allows the compiler to catch type mismatches at compile time, making it ideal for building search filters with optional parameters.
+
+---
+
+## Code Example
+
+Here is an implementation of a dynamic search query using the Criteria API:
+
+```java
+package com.devdocs.query;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.*;
+import java.util.ArrayList;
+import java.util.List;
+
+class User { private String role; public String getRole() { return role; } }
+
+public class SearchService {
+    public List<User> findUsers(EntityManager em, String roleFilter) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<User> cq = cb.createQuery(User.class);
+        Root<User> user = cq.from(User.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Dynamically add search filters
+        if (roleFilter != null) {
+            predicates.add(cb.equal(user.get("role"), roleFilter));
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        return em.createQuery(cq).getResultList();
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Named Parameters**: Always bind parameters using named parameters (e.g. `:email`) instead of concatenating strings directly, protecting your database against SQL injection attacks.
+*   **Enforce Pagination Limits**: Always set explicit pagination bounds (`setFirstResult()` and `setMaxResults()`) to prevent queries from loading massive datasets and exhausting memory.
+*   **Use Projections for Read-Only Queries**: When you only need specific columns, select flat DTO projections using constructor expressions (`SELECT new DTO(...)`) instead of loading full entities to improve performance.
+*   **Prefer Criteria API for Dynamic Queries**: Use the Criteria API when query structures depend on dynamic runtime parameters.
+
+---
+
+## Common Mistakes
+
+*   **Concatenating query strings directly**: Merging user inputs directly into query strings, creating SQL injection vulnerabilities.
+*   **Forgetting pagination controls**: Running broad queries without limits, which can fetch millions of records and cause OutOfMemory errors in production.
+*   **Using Criteria API for simple lookups**: Writing complex Criteria code for basic queries where simple Spring Data query methods are cleaner.
+
+<Callout type="note" title="JPQL vs HQL">
+  JPQL is the standard JPA specification query language, whereas HQL is Hibernate's proprietary extension. HQL includes advanced features (like custom joins and functions) that are compiled to standard SQL dialect variants.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   HQL and JPQL operate on Java entity objects rather than database tables.
+*   Bind query inputs using named parameters to prevent SQL injection.
+*   Use the Criteria API to construct type-safe dynamic queries programmatically.
+*   Always configure pagination limits to prevent loading massive datasets.

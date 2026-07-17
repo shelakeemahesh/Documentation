@@ -1,14 +1,71 @@
 ---
 title: "Introduction & Setup"
-description: "Learn about Introduction & Setup in our comprehensive Full Stack Guide."
+description: "Configure your local environment with PostgreSQL Server, connect via psql CLI, and understand the process model."
 ---
 
 # Introduction & Setup
 
-Welcome to the section on **Introduction & Setup**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction & Setup.
+PostgreSQL is an advanced, enterprise-grade, open-source object-relational database system (ORDBMS). It is famous for its reliability, feature richness, SQL compliance, and extensibility, supporting complex data types and advanced indexing engines.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding PostgreSQL features and process models is essential for backend engineering.
+
+### Object-Relational Database System (ORDBMS)
+PostgreSQL is an ORDBMS, meaning it supports object-oriented extensions (like table inheritance and custom user-defined types) alongside standard relational database tables, rows, and foreign keys.
+
+### The Process-Based Architecture
+Unlike MySQL which uses a single-process multithreaded model, PostgreSQL uses a process-based model. Every incoming client connection spawns a separate backend process. Because processes consume more memory than threads, connection pooling is critical in PostgreSQL.
+
+---
+
+## Code Example
+
+Here is the standard terminal command configuration to install PostgreSQL and connect using the `psql` CLI client:
+
+```bash
+# 1. Install PostgreSQL Server on macOS via Homebrew
+brew install postgresql@15
+
+# 2. Start PostgreSQL service daemon
+brew services start postgresql@15
+
+# 3. Connect to default postgres database using psql CLI
+psql -d postgres
+```
+
+Inside the psql shell, run standard query diagnostics:
+```sql
+-- View current active connection details
+SELECT version();
+```
+
+---
+
+## Best Practices
+
+*   **Use pgBouncer for Connection Pooling**: Place a connection pooler (like PgBouncer) in front of PostgreSQL to manage process allocation overhead.
+*   **Secure Client Connections**: Configure client connection rules inside `pg_hba.conf` to restrict access to trusted subnets only.
+*   **Standardize DB Port**: Bind PostgreSQL to standard port `5432` inside private subnets, blocking external network access.
+*   **Run VACUUM regularly**: Ensure autovacuum daemon is enabled to reclaim storage space left by deleted or updated rows.
+
+---
+
+## Common Mistakes
+
+*   **Spawning raw client connections continuously**: Connecting to PostgreSQL directly without a connection pooler, quickly exhausting system memory.
+*   **Disabling Autovacuum**: Turning off autovacuum in configuration files, leading to database table bloat and slow search queries.
+*   **Misconfiguring pg_hba.conf**: Leaving authentication rules open (`trust` mode globally), allowing unauthorized clients to connect without passwords.
+
+<Callout type="note" title="Autovacuum Daemon">
+  PostgreSQL uses Multi-Version Concurrency Control (MVCC). When you update or delete a row, PostgreSQL does not overwrite the data; it creates a new version. The autovacuum daemon runs in the background to clean up these dead row versions (garbage data).
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   PostgreSQL uses a process-based connection model, making connection pooling critical.
+*   Configure client access rules securely inside `pg_hba.conf`.
+*   Keep autovacuum enabled to prevent table bloat and maintain query speeds.
+*   Always use connection poolers (like PgBouncer) at scale.

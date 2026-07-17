@@ -1,14 +1,91 @@
 ---
 title: "Multithreading & Concurrency"
-description: "Learn about Multithreading & Concurrency in our comprehensive Full Stack Guide."
+description: "Master Java concurrency, thread pools, Executors, and thread synchronization parameters."
 ---
 
 # Multithreading & Concurrency
 
-Welcome to the section on **Multithreading & Concurrency**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Multithreading & Concurrency.
+Java supports multithreading, allowing you to run multiple execution threads concurrently to maximize CPU utilization. In backend systems, managing threads, synchronization, and race conditions is essential to prevent data corruption and thread locks.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding thread pools and memory synchronization states is key to building concurrent backends.
+
+### Thread Management: ExecutorService
+Creating threads manually (via `new Thread()`) is expensive. Modern Java uses **ExecutorService** to manage a thread pool, reusing threads from the pool to execute tasks asynchronously and reducing thread allocation overhead.
+
+### Synchronization and Thread Safety
+When multiple threads access shared mutable state:
+-   **`synchronized` block**: Locks an object, allowing only one thread to execute the synchronized code at a time.
+-   **`volatile` keyword**: Guarantees that updates to a variable are written directly to main memory and are visible to all threads instantly, bypassing thread CPU caches.
+
+### Concurrent Collections
+Standard collections (like `HashMap`) crash under concurrent modifications. Use concurrent collections to handle multi-threaded updates safely:
+-   `ConcurrentHashMap`: Uses fine-grained segment locking to support concurrent read and write operations.
+-   `CopyOnWriteArrayList`: Recreates the underlying array on updates, making it ideal for read-heavy, write-rare lists.
+
+---
+
+## Code Example
+
+Here is an implementation of a thread-safe counter using `AtomicInteger` and a managed thread pool:
+
+```java
+package com.devdocs.concurrency;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class ConcurrencyApp {
+    public static void main(String[] args) throws InterruptedException {
+        // 1. Thread-safe atomic counter
+        AtomicInteger counter = new AtomicInteger(0);
+
+        // 2. Thread pool with 10 fixed threads
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+
+        // 3. Submit 1000 tasks to increment counter
+        for (int i = 0; i < 1000; i++) {
+            executor.submit(counter::incrementAndGet);
+        }
+
+        // 4. Shutdown executor and wait for completion
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
+
+        System.out.println("Final Counter value: " + counter.get()); // "1000"
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Executors over Manual Threads**: Always use `ExecutorService` thread pools instead of instantiating raw threads manually.
+*   **Use Atomic Classes for Counters**: Use classes in the `java.util.concurrent.atomic` package (like `AtomicInteger`) instead of synchronized blocks for simple counter updates.
+*   **Keep Synchronized Blocks Small**: Minimize the amount of code inside synchronized blocks to prevent thread blocking bottlenecks.
+*   **Use Concurrent Collections**: Always use `ConcurrentHashMap` instead of manual synchronization wrappers around standard maps.
+
+---
+
+## Common Mistakes
+
+*   **Creating new threads manually in loops**: Allocating raw threads continuously, which drains system memory resources and crashes the JVM.
+*   **Double-checked locking without volatile**: Writing custom singleton locks without using the `volatile` keyword, allowing other threads to read partially initialized objects.
+*   **Forgetting to shutdown ExecutorService**: Neglecting to shut down executors, keeping the JVM running indefinitely because active threads are still alive.
+
+<Callout type="warning" title="Deadlock Danger">
+  Deadlocks occur when two threads are blocked forever, each waiting for the lock held by the other. Prevent deadlocks by always acquiring locks in a consistent order across threads.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `ExecutorService` manages thread allocation and reuse using thread pools.
+*   `synchronized` locks code blocks; `volatile` ensures immediate visibility of variable updates across thread CPU caches.
+*   Use `Atomic` classes to handle simple concurrent operations without locking code.
+*   Always shut down executor services when tasks are complete to prevent thread leaks.

@@ -1,14 +1,69 @@
 ---
 title: "Indexing Strategies"
-description: "Learn about Indexing Strategies in our comprehensive Full Stack Guide."
+description: "Master advanced indexing strategies in PostgreSQL, including GIN, BRIN, partial, and expression indexes."
 ---
 
 # Indexing Strategies
 
-Welcome to the section on **Indexing Strategies**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Indexing Strategies.
+PostgreSQL provides a wide range of indexing types designed for specific data patterns. In addition to standard B-Tree indexes, you can write advanced strategies using **GIN** indexes (for JSONB/Arrays), **BRIN** indexes (for massive log tables), and **Partial** or **Expression** indexes to optimize query speeds.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding advanced index types and selective indexing constraints is key to database tuning.
+
+### Core Indexing Types
+-   **B-Tree (Default)**: Used for equal comparisons (`=`), range lookups (`>`, `<`), and sorting.
+-   **GIN (Generalized Inverted Index)**: Indexes composite values (like JSONB documents or Arrays). GIN map keys and values to their parent rows, allowing fast queries inside semi-structured data.
+-   **BRIN (Block Range Index)**: Indexes data that is sorted sequentially on disk (like transaction dates or log sequence numbers). It maps ranges of blocks rather than indexing individual rows, requiring a fraction of the storage footprint of a B-Tree.
+
+### Selective Indexes
+-   **Partial Index**: An index containing a filter clause (e.g. `CREATE INDEX ON orders(user_id) WHERE status = 'ACTIVE'`). Reduces index size and speeds up writes.
+-   **Expression Index**: An index built on function outputs (e.g. `CREATE INDEX ON users(LOWER(email))`), which optimizes query searches that use that function.
+
+---
+
+## Code Example
+
+Here is an implementation of a GIN index on a JSONB settings column and an expression index on lowercased emails:
+
+```sql
+-- 1. Create GIN index on JSONB settings (enables fast containment queries)
+CREATE INDEX idx_user_settings_gin ON user_profiles USING GIN (settings);
+
+-- 2. Create expression index on lowercased emails
+CREATE INDEX idx_user_lower_email ON users (LOWER(email));
+
+-- 3. Query CAN use index (filters lowercase matches)
+SELECT * FROM users 
+WHERE LOWER(email) = 'mahesh@example.com';
+```
+
+---
+
+## Best Practices
+
+*   **Use GIN for JSONB Containment**: Always build GIN indexes when querying nested JSONB properties using containment operators (`@>`).
+*   **Use BRIN for Large Log Tables**: Use BRIN indexes on massive tables (millions of rows) containing sequentially ordered data (like timestamps) to save disk space.
+*   **Build Partial Indexes for Flag States**: Build partial indexes when filtering for rare flag states (e.g. `WHERE status = 'FAILED'`) to keep index sizes minimal.
+*   **Use EXPLAIN to verify indexes**: Analyze query plans to verify that the query planner is using your custom indexes.
+
+---
+
+## Common Mistakes
+
+*   **Building B-Tree indexes on JSONB columns**: Creating standard B-Tree indexes on JSONB documents, which only index the document as a whole and cannot be used for nested lookups.
+*   **Ignoring BRIN sorting requirements**: Using BRIN indexes on tables where data is inserted out of order on disk, making the index ineffective.
+*   **Querying without lower() on expression indexes**: Building an index on `LOWER(email)` but querying using `WHERE email = '...'`, which bypasses the index.
+
+<Callout type="warning" title="GIN Storage Size">
+  GIN indexes can grow quite large and slow down write throughput. Limit GIN indexes to columns that are frequently filtered in read queries.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   GIN indexes enable fast queries inside JSONB documents and array columns.
+*   BRIN indexes save storage space on sequentially ordered log tables.
+*   Partial indexes filter and index only a subset of table rows.
+*   Expression indexes speed up queries that use function filters.

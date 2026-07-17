@@ -1,14 +1,85 @@
 ---
 title: "OOP Concepts"
-description: "Learn about OOP Concepts in our comprehensive Full Stack Guide."
+description: "Master Encapsulation, Inheritance, Polymorphism, and Abstraction in Java."
 ---
 
 # OOP Concepts
 
-Welcome to the section on **OOP Concepts**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for OOP Concepts.
+Object-Oriented Programming (OOP) is the core paradigm of the Java language. OOP organizes software design around data objects rather than functions, structuring code into classes to promote modularity and reuse.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the four pillars of OOP is essential for designing clean class structures.
+
+### The Four Pillars of OOP
+1.  **Encapsulation**: Hiding internal object state data using `private` access modifiers and exposing updates only through public getters and setters.
+2.  **Inheritance**: Deriving new classes from existing parent classes (`extends`) to share attributes and behaviors.
+3.  **Polymorphism**: The ability of an object to take many forms. Typically achieved by overriding parent methods dynamically at runtime.
+4.  **Abstraction**: Hiding complex implementation details and showing only essential interfaces using `interface` or `abstract class` declarations.
+
+---
+
+## Code Example
+
+Here is an implementation of abstraction, inheritance, and dynamic polymorphism in Java:
+
+```java
+package com.devdocs.oop;
+
+// 1. Abstraction via Interface
+interface PaymentProcessor {
+    void process(double amount);
+}
+
+// 2. Concrete Implementation (Encapsulation and Polymorphism)
+class CreditCardProcessor implements PaymentProcessor {
+    private String cardNumber; // Encapsulated variable
+
+    public CreditCardProcessor(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+
+    @Override
+    public void process(double amount) {
+        System.out.println("Processing credit card payment of $" + amount);
+    }
+}
+
+public class PaymentApp {
+    public static void main(String[] args) {
+        // Polymorphism: Reference is PaymentProcessor, object is CreditCardProcessor
+        PaymentProcessor processor = new CreditCardProcessor("1234-5678-9012-3456");
+        processor.process(250.00);
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Program to Interfaces**: Always declare references as interfaces (e.g. `List<String> list = new ArrayList<>()`) to keep code modular.
+*   **Favor Composition over Inheritance**: Avoid deep inheritance structures. Nest helper classes inside your models to share features dynamically.
+*   **Enforce Encapsulation**: Make class fields `private` by default. Only expose variables if absolutely necessary.
+*   **Annotate with @Override**: Always add `@Override` annotations when implementing interface methods to catch compile conflicts.
+
+---
+
+## Common Mistakes
+
+*   **Exposing mutable internal objects**: Returning references to mutable arrays or lists inside getter methods, allowing external code to modify internal state.
+*   **Creating deep class inheritance hierarchies**: Designing class trees 4–5 levels deep, making code fragile and hard to refactor.
+*   **Using abstract classes where interface fits**: Using abstract classes when multiple interfaces could be implemented instead, blocking multiple inheritance flexibility.
+
+<Callout type="note" title="Dynamic Dispatch">
+  Java resolves overridden method calls at runtime based on the actual object type, not the reference type. This is known as Dynamic Method Dispatch.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Encapsulation secures class fields using private access controls.
+*   Inheritance allows subclass extensions; polymorphism resolves method binds dynamically at runtime.
+*   Interfaces declare contract specifications, hiding implementation details.
+*   Always favor object composition over strict inheritance hierarchies.

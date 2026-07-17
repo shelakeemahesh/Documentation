@@ -1,14 +1,69 @@
 ---
-title: "Replication"
-description: "Learn about Replication in our comprehensive Full Stack Guide."
+title: "Replication & Clustering"
+description: "Scale PostgreSQL databases using Streaming Replication, Logical Replication, and High Availability setups."
 ---
 
-# Replication
+# Replication & Clustering
 
-Welcome to the section on **Replication**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Replication.
+Replication duplicate databases across multiple nodes to scale read traffic horizontally and ensure system availability. PostgreSQL supports both **Physical Streaming Replication** and **Logical Replication** to handle failover configurations and data synchronizations.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding physical and logical replication is key to database clustering and high availability design.
+
+### Physical Streaming Replication
+Replicates the entire database block-by-block. The primary server streams Write-Ahead Log (WAL) records to replica nodes asynchronously or synchronously. Replicas are identical, read-only copies of the primary server. This is the standard setup for High Availability (HA) configurations.
+
+### Logical Replication
+Replicates specific tables or rows using a publish-subscribe model. You can stream updates from a single table on one database to another database (even running a different PostgreSQL version). This is ideal for cross-database data sharing and reporting.
+
+### Failover & Connection Pools
+When a primary node fails, a replica must be promoted to primary (failover) to maintain system availability. Manage database routing and health checks using orchestrators like **Patroni**.
+
+---
+
+## Code Example
+
+Here is an example demonstrating the publish and subscribe configurations for Logical Replication:
+
+```sql
+-- 1. On the Primary Database (Publisher)
+-- Create a publication to stream changes from the orders table
+CREATE PUBLICATION order_pub FOR TABLE orders;
+
+-- 2. On the Replica Database (Subscriber)
+-- Create a subscription to receive updates from the publisher
+CREATE SUBSCRIPTION order_sub 
+    CONNECTION 'host=primary-db port=5432 user=replicator dbname=shop_db' 
+    PUBLICATION order_pub;
+```
+
+---
+
+## Best Practices
+
+*   **Use Streaming Replication for HA**: Standardize on physical streaming replication for database failover configurations.
+*   **Use Patroni for Automatic Failover**: Manage database failovers automatically using Patroni and Consul to prevent downtime.
+*   **Set Replication Slots**: Use replication slots to ensure the primary server retains WAL records until replicas have received them, preventing replication breaks.
+*   **Secure WAL Traffic**: Encrypt replication traffic using SSL connection certificates.
+
+---
+
+## Common Mistakes
+
+*   **Relying on manual failovers during crashes**: Attempting to promote replicas manually during system outages, extending downtime.
+*   **Ignoring WAL storage limits**: Using replication slots without monitoring replica health, causing the primary server to run out of disk space as it holds WAL logs for offline replicas.
+*   **Mixing schema modifications in logical subscriptions**: Altering table structures on the publisher without applying the changes to the subscriber, breaking logical replication.
+
+<Callout type="warning" title="Logical Schema Sync">
+  Logical replication streams table rows but does not replicate schema DDL changes. If you alter a table on the publisher, you must apply the same schema updates to the subscriber manually to prevent replication failures.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Physical streaming replication copies the entire database block-by-block.
+*   Logical replication replicates specific tables using publish-subscribe models.
+*   Use Patroni to automate failovers and maintain database availability.
+*   Manage replication slots carefully to prevent primary disk exhaustion.

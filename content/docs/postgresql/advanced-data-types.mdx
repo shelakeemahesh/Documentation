@@ -1,14 +1,79 @@
 ---
-title: "Advanced Data Types (JSONB, Arrays)"
-description: "Learn about Advanced Data Types (JSONB, Arrays) in our comprehensive Full Stack Guide."
+title: "Advanced Data Types"
+description: "Master PostgreSQL advanced data types including JSONB, UUIDs, Array columns, and ENUM structures."
 ---
 
-# Advanced Data Types (JSONB, Arrays)
+# Advanced Data Types
 
-Welcome to the section on **Advanced Data Types (JSONB, Arrays)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Advanced Data Types (JSONB, Arrays).
+PostgreSQL sets itself apart from standard relational databases by providing native support for advanced data types. These include **JSONB** (binary-serialized JSON objects), **UUIDs**, **Array columns**, and custom **ENUM** types, allowing you to build flexible schemas without sacrificing relational integrity.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding rich data types and jsonb querying operators is key to database schema design.
+
+### JSON vs. JSONB
+-   **`JSON`**: Stores data as raw, unparsed text strings. Fast to write, but slow to query because the database must parse the text on every read.
+-   **`JSONB`**: Stores data in a decomposed, binary format. Slightly slower to write due to parsing overhead, but significantly faster to query because it supports B-Tree and GIN indexing.
+
+### Array Data Types
+PostgreSQL allows columns to store arrays of basic types (e.g. `VARCHAR[]` or `INT[]`), making it simple to store simple lists (like tags or values) without creating join tables.
+
+---
+
+## Code Example
+
+Here is an implementation of a user profile table using UUID primary keys, JSONB payloads, and Array columns:
+
+```sql
+-- 1. Enable UUID generation extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. Create table using advanced types
+CREATE TABLE user_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    settings JSONB NOT NULL,
+    tags VARCHAR[] NOT NULL
+);
+
+-- 3. Insert record containing JSONB and Array fields
+INSERT INTO user_profiles (settings, tags)
+VALUES (
+    '{"theme": "dark", "notifications": {"email": true, "push": false}}',
+    ARRAY['developer', 'subscriber']
+);
+
+-- 4. Query JSONB properties using arrow operators
+SELECT id FROM user_profiles
+WHERE settings -> 'notifications' ->> 'email' = 'true';
+```
+
+---
+
+## Best Practices
+
+*   **Prefer JSONB over JSON**: Always use `JSONB` for storing semi-structured data to benefit from fast binary lookups and indexing support.
+*   **Use UUIDs for Distributed Systems**: Use `UUID` primary keys instead of auto-incrementing integers in distributed architectures to prevent key collisions.
+*   **Apply Array Types Sparingly**: Use array columns only for flat, simple, read-only data lists (like tags). For data that requires frequent joins or sorting, use standard foreign key tables.
+*   **Enforce Schema Validation on JSONB**: Enforce constraints on JSONB structures using application validations or check constraints in the database.
+
+---
+
+## Common Mistakes
+
+*   **Using raw JSON columns instead of JSONB**: Storing document files in `JSON` columns, which degrades query performance because it cannot be indexed.
+*   **Over-relying on JSONB for all tables**: Building tables entirely out of JSONB columns, converting PostgreSQL into a NoSQL database and losing relational checks.
+*   **Miskeying JSONB arrow operators**: Confusing the `->` operator (returns a nested JSON object) with the `->>` operator (returns values as text strings).
+
+<Callout type="tip" title="JSONB Containment Operator">
+  Use the JSONB containment operator (`@>`) inside queries to check if a JSONB document contains specific key-value structures: 
+  `WHERE settings @> '{"theme": "dark"}'`
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JSONB stores parsed binary documents, enabling fast index lookups.
+*   UUIDs provide globally unique IDs, preventing collisions in distributed tables.
+*   Use array columns only for flat, read-only tag structures.
+*   The `->>` operator extracts JSON properties as text values.

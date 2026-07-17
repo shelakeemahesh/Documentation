@@ -1,14 +1,85 @@
 ---
-title: "Introduction to ORM"
-description: "Learn about Introduction to ORM in our comprehensive Full Stack Guide."
+title: "Introduction to ORM & Hibernate"
+description: "Learn ORM design principles, impedance mismatch, and the Hibernate architecture."
 ---
 
-# Introduction to ORM
+# Introduction to ORM & Hibernate
 
-Welcome to the section on **Introduction to ORM**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction to ORM.
+Object-Relational Mapping (ORM) is a programming technique that links database tables directly to object-oriented programming classes. Hibernate is the leading ORM framework for Java, implementing the JPA specification and resolving object-relational impedance mismatches.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding ORM abstractions and Hibernate execution layers is essential for persistence engineering.
+
+### The Object-Relational Impedance Mismatch
+Java objects represent data with classes, inheritance structures, references, and encapsulation, whereas relational databases represent data in tables, rows, columns, and foreign key relations. ORM frameworks bridge this paradigm gap automatically.
+
+### Core Hibernate Architecture Components
+-   **`SessionFactory`**: A thread-safe, heavy object that stores database configuration metadata and compiles query statements. Typically initialized once per application lifecycle.
+-   **`Session`**: A single-threaded, short-lived object representing an active database connection context. Used to perform CRUD operations.
+-   **`Transaction`**: Manages atomic database transaction boundaries.
+
+---
+
+## Code Example
+
+Here is an example demonstrating SessionFactory creation and session transaction controls in legacy Java:
+
+```java
+package com.devdocs.hibernate;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+public class HibernateApp {
+    private static SessionFactory sessionFactory;
+
+    public static void main(String[] args) {
+        // Initialize SessionFactory once
+        sessionFactory = new Configuration().configure().buildSessionFactory();
+
+        // Open session and begin database transaction
+        try (Session session = sessionFactory.openSession()) {
+            Transaction tx = session.beginTransaction();
+            
+            // Perform database operations (mock payload)
+            
+            tx.commit(); // Persist changes atomicly
+        } catch (Exception e) {
+            System.err.println("Transaction failed: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Initialize SessionFactory Once**: Build `SessionFactory` as a singleton component to avoid configuration performance overhead.
+*   **Always Wrap in try-with-resources**: Ensure `Session` is closed automatically using try-with-resources to prevent database connection leaks.
+*   **Prefer Declarative Transactions**: Use Spring's `@Transactional` annotation in Spring Boot applications to manage transactions declaratively instead of coding them manually.
+*   **Enforce Lazy Fetching**: Use lazy loading (`FetchType.LAZY`) for all relational mappings to avoid loading unnecessary database records into memory.
+
+---
+
+## Common Mistakes
+
+*   **Recreating SessionFactory on every request**: Initializing `SessionFactory` repeatedly, which slows down application response times.
+*   **Forgetting to commit transactions**: Performing updates without calling `tx.commit()`, causing database updates to roll back automatically when the session closes.
+*   **Leaking active Sessions**: Opening sessions manually without closing them, quickly exhausting database connection pools.
+
+<Callout type="note" title="Impedance mismatch details">
+  Relational databases lack support for inheritance, encapsulation, and circular reference chains. Hibernate solves these gaps by compiling inheritance structures into single-table, joined-table, or table-per-class SQL models.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   ORM bridges Java object-oriented representations with relational database tables.
+*   `SessionFactory` compiles metadata once; `Session` manages database connections per request.
+*   Always use try-with-resources to close session instances safely.
+*   Let Spring Boot manage transactions using `@Transactional` annotations.

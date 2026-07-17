@@ -1,14 +1,80 @@
 ---
 title: "Java Memory Model & GC"
-description: "Learn about Java Memory Model & GC in our comprehensive Full Stack Guide."
+description: "Understand Heap and Stack memory, Java Virtual Machine GC algorithms, and memory leak prevention."
 ---
 
 # Java Memory Model & GC
 
-Welcome to the section on **Java Memory Model & GC**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Java Memory Model & GC.
+The Java Virtual Machine (JVM) divides memory into specific runtime data areas to handle execution scopes and data storage. The **Garbage Collector (GC)** runs in the background to automatically free heap memory allocated to unreachable objects, preventing memory leaks.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding JVM memory allocations and Garbage Collection phases is key to writing high-performance backend systems.
+
+### Heap vs. Stack Memory
+-   **Stack Memory**: Stores local variables and method call frames. Allocated per thread, operates on LIFO order, and is freed automatically when the method scope exits.
+-   **Heap Memory**: Stores all objects and instance fields. Shared by all threads. Memory allocation is managed automatically by the Garbage Collector.
+
+### Garbage Collection Generations
+The JVM heap is divided into generations based on object lifetimes:
+1.  **Young Generation**: Where newly created objects are allocated. Frequently collected via Minor GC.
+2.  **Old Generation**: Holds long-lived objects. Collected via Major/Full GC, which pauses thread execution.
+
+### Modern GC Algorithms
+-   **G1 (Garbage First)**: The default collector for modern JDKs. Splits the heap into regions and collects regions with the most garbage first to minimize pauses.
+-   **ZGC (Z Garbage Collector)**: A ultra-low latency collector designed for massive heaps, keeping pause times under 1 millisecond.
+
+---
+
+## Code Example
+
+Here is an example demonstrating memory allocation profiles and how to trigger heap memory usage diagnostics:
+
+```java
+package com.devdocs.memory;
+
+public class MemoryApp {
+    public static void main(String[] args) {
+        // Get runtime JVM memory allocation parameters
+        Runtime runtime = Runtime.getRuntime();
+
+        long maxMemory = runtime.maxMemory();
+        long allocatedMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+
+        System.out.println("Max JVM Memory: " + (maxMemory / 1024 / 1024) + " MB");
+        System.out.println("Allocated Memory: " + (allocatedMemory / 1024 / 1024) + " MB");
+        System.out.println("Free Memory: " + (freeMemory / 1024 / 1024) + " MB");
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Minimize Object Creation**: Avoid instantiating temporary objects inside high-frequency loops to reduce Garbage Collection overhead.
+*   **Standardize on G1GC**: Use the G1 garbage collector by default. On JDK 17+, it handles memory allocations and GC pause times efficiently.
+*   **Close Streams Promptly**: Always close files and sockets using try-with-resources to prevent memory leaks.
+*   **Configure Heap Limits**: Always set explicit minimum (`-Xms`) and maximum (`-Xmx`) heap sizes in production to prevent JVM memory allocation bottlenecks.
+
+---
+
+## Common Mistakes
+
+*   **Holding references in static fields**: Retaining references to objects inside static variables, preventing the Garbage Collector from freeing them and causing memory leaks.
+*   **Calling System.gc() explicitly**: Attempting to force garbage collection manually using `System.gc()`. This triggers full stop-the-world collections, degrading performance.
+*   **Ignoring OutOfMemoryError logs**: Neglecting heap allocations monitoring, causing applications to crash silently in production.
+
+<Callout type="warning" title="Memory Leaks in Java">
+  While Java handles memory automatically, memory leaks still occur when unused objects are kept reachable in memory through active references (like static collections or unclosed database connections).
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Stack stores local variables; Heap stores object instances.
+*   Garbage collection frees memory allocated to unreachable objects automatically.
+*   Modern JVMs use G1 or ZGC collectors to keep pause times minimal.
+*   Avoid holding object references in static fields to prevent memory leaks.

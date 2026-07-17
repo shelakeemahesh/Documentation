@@ -1,14 +1,101 @@
 ---
 title: "Semantic HTML"
-description: "Learn about Semantic HTML in our comprehensive Full Stack Guide."
+description: "Learn why using meaningful semantic tags like header, main, and section beats general division blocks."
 ---
 
 # Semantic HTML
 
-Welcome to the section on **Semantic HTML**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Semantic HTML.
+Semantic HTML refers to using markup tags that describe their meaning and role to both the developer and the browser. Instead of using generic boxes (like `div` or `span`) for everything, semantic tags describe what kind of content they contain, which is critical for search optimization and accessibility.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the differences between semantic layouts and standard containers is essential for clean HTML design.
+
+### Non-Semantic vs. Semantic Containers
+-   **Non-Semantic Elements**: Divs (`<div>`) and spans (`<span>`) convey nothing about their contents. They are generic boxes used purely for CSS hook targets.
+-   **Semantic Elements**: Elements like `<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<aside>`, and `<footer>` clearly define their structural purpose.
+
+### The Document Accessibility Outline
+Assistive technologies (like screen readers) parse semantic HTML elements to build a landmarks map of the page. Visually impaired users can jump directly to the `<nav>` or `<main>` landmarks. If a page uses only divs, users are forced to read the entire document line-by-line.
+
+---
+
+## Code Example
+
+Here is a semantic page structure illustrating layout organization:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Semantic Page Architecture</title>
+</head>
+<body>
+    <!-- Main page header holds branding and navigation links -->
+    <header>
+        <div class="logo">DevDocs</div>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/docs">Docs</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main landmark contains primary article core contents -->
+    <main id="main-content">
+        <article>
+            <header>
+                <h1>Architecting Semantic Layouts</h1>
+                <p>Published on: <time datetime="2026-07-17">July 17, 2026</time></p>
+            </header>
+            
+            <section>
+                <h2>Introduction to Semantics</h2>
+                <p>Using semantic tags improves SEO page crawling significantly.</p>
+            </section>
+        </article>
+        
+        <aside>
+            <h3>Related Articles</h3>
+            <p>Check out our CSS Layouts section.</p>
+        </aside>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 DevDocs. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+```
+
+---
+
+## Best Practices
+
+*   **Use One main Element Per Page**: The `<main>` tag should contain the unique primary content of the page; do not wrap multiple page-level main tags.
+*   **Use section for Thematic Groups**: Only use `<section>` when the content has a clear thematic heading (e.g. `<h2>`). If you only need a style wrapper container, use a `div`.
+*   **Use article for Independent Entries**: Wrap self-contained content blocks that could stand alone in RSS feeds (like blog posts, news articles, or comments) in `<article>`.
+*   **Maintain Correct Heading Hierarchy**: Never skip heading levels (e.g. going from `<h1>` to `<h3>`). Keep your outline tree sequential.
+
+---
+
+## Common Mistakes
+
+*   **Using div for navigation layouts**: Wrapping menus in generic containers instead of the standard `<nav>` element.
+*   **Choosing headings for font-size selection**: Using `<h3>` instead of `<h2>` simply because you want smaller text. Keep structural headings separate from visual font styling.
+*   **Wrapping header/footer inside section repeatedly**: Bloating layouts with unnecessary sub-headers inside simple text groupings.
+
+<Callout type="warning" title="Semantic Accessibility">
+  Simply using semantic tags is the easiest way to achieve baseline web accessibility (WCAG compliance) without writing complex ARIA role code.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Semantic elements describe their content's meaning to crawlers and screen readers.
+*   Use `<main>` to wrap the primary content, and only use one per page.
+*   Use `<nav>` for primary link blocks, and `<article>` for independent content blocks.
+*   Separate content structure (HTML semantics) from visual design (CSS).

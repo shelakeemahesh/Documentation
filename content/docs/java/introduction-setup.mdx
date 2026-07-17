@@ -1,14 +1,77 @@
 ---
-title: "Introduction & Setup (JDK)"
-description: "Learn about Introduction & Setup (JDK) in our comprehensive Full Stack Guide."
+title: "Introduction & Setup"
+description: "Configure your local environment with the Java Development Kit (JDK) and compile your first application."
 ---
 
-# Introduction & Setup (JDK)
+# Introduction & Setup
 
-Welcome to the section on **Introduction & Setup (JDK)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction & Setup (JDK).
+Java is a robust, class-based, object-oriented programming language designed to have as few implementation dependencies as possible. Built on the write-once, run-anywhere (WORA) principle, Java code compiles to bytecode that runs on any machine equipped with a Java Virtual Machine (JVM).
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding JVM execution environments and variable configurations is essential for backend engineering.
+
+### JDK vs. JRE vs. JVM
+-   **JVM (Java Virtual Machine)**: The execution engine that runs compiled Java bytecode on physical systems.
+-   **JRE (Java Runtime Environment)**: Contains the JVM and core library classes required to run compiled Java programs.
+-   **JDK (Java Development Kit)**: The complete toolkit containing the JRE, the compiler (`javac`), debugger, and development tools. Backend developers must install the JDK.
+
+### Environment Variables: JAVA_HOME
+Build tools (like Maven and Gradle) rely on the `JAVA_HOME` environment variable to find the compiler. It must point to the absolute installation directory of your JDK.
+
+---
+
+## Code Example
+
+Here is a standard, modern Java 17+ Application file showing top-level class declarations:
+
+```java
+package com.devdocs.intro;
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        // Print greeting output to stdout console
+        System.out.println("Hello, Java Backend Roadmap!");
+    }
+}
+```
+
+To compile and execute this file in your terminal, run:
+```bash
+# Compile Java file to class bytecode
+javac HelloWorld.java
+
+# Execute compiled class using JVM
+java HelloWorld
+```
+
+---
+
+## Best Practices
+
+*   **Use Java LTS Releases**: Standardize on active LTS versions (Java 17 or Java 21) in enterprise production code.
+*   **Configure SDKMAN**: Use the SDKMAN tool manager to install and switch between different JDK distribution versions easily.
+*   **Always Define Package Names**: Group related classes in explicit packages to prevent global namespace collisions.
+*   **Strict Class Naming**: Match the class name exactly with the filename (e.g. `class User` must live in `User.java`).
+
+---
+
+## Common Mistakes
+
+*   **Installing JRE instead of JDK**: Installing the runtime instead of the development kit, which prevents the compiler `javac` from running.
+*   **Mismatched File Names**: Naming the class differently from the source filename, throwing compile exceptions.
+*   **Setting duplicate Java versions in PATH**: Mixing paths of old Java versions, causing runtime type errors during builds.
+
+<Callout type="note" title="Java Records (Java 16+)">
+  Java records provide a compact syntax for declaring data-carrier classes, generating constructors, getters, equals, and hashcode methods automatically:
+  `public record UserRecord(String id, String email) {}`
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JDK compiles code; JVM executes bytecode on physical machines.
+*   Configure `JAVA_HOME` pointing to your active JDK directory.
+*   Class names must match their corresponding `.java` filenames exactly.
+*   Standardize on modern LTS releases (Java 17/21) for project development.

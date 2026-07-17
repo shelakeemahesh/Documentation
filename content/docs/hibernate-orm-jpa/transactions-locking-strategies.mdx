@@ -1,14 +1,81 @@
 ---
 title: "Transactions & Locking Strategies"
-description: "Learn about Transactions & Locking Strategies in our comprehensive Full Stack Guide."
+description: "Master database transactions, concurrency anomalies, and Optimistic vs Pessimistic locking."
 ---
 
 # Transactions & Locking Strategies
 
-Welcome to the section on **Transactions & Locking Strategies**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Transactions & Locking Strategies.
+Transactions ensure database operations are executed reliably using ACID properties. In high-traffic backend systems, concurrent transactions can collide when updating the same records. Managing transaction isolation levels and choosing the right locking strategy (Optimistic vs. Pessimistic) is essential to prevent data corruption and database bottlenecks.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding isolation levels and locking mechanisms prevents data race conditions.
+
+### Concurrency Anomalies
+-   **Dirty Read**: Reading uncommitted updates made by another transaction.
+-   **Non-Repeatable Read**: Re-reading a row within a transaction and finding different data because another transaction committed updates in the meantime.
+-   **Phantom Read**: Re-running a query and finding new matching rows inserted by another committed transaction.
+
+### Locking Strategies: Optimistic vs. Pessimistic
+-   **Optimistic Locking (Recommended for Read-Heavy)**: Assumes collisions are rare. Does not lock database rows. Instead, entities include a `@Version` field. If another transaction updates the row in the meantime, the version mismatch triggers an `OptimisticLockException` during commit, rolling back the transaction.
+-   **Pessimistic Locking (Recommended for Write-Heavy)**: Assumes collisions are common. Locks rows at the database level using SQL commands (e.g. `SELECT FOR UPDATE`). Other transactions are blocked from reading or writing to the locked rows until the transaction finishes.
+
+---
+
+## Code Example
+
+Here is an implementation of Optimistic Locking using a `@Version` entity property:
+
+```java
+package com.devdocs.transactions;
+
+import jakarta.persistence.*;
+@Entity
+@Table(name = "accounts")
+public class Account {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private double balance;
+
+    @Version // Automatically managed version property for Optimistic Locking
+    private Long version;
+
+    public void withdraw(double amount) {
+        if (balance >= amount) {
+            balance -= amount;
+        }
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Optimistic Locking**: Use optimistic locking (`@Version`) by default. It scales better than pessimistic locking because it avoids blocking database connection pools.
+*   **Keep Transactions Short**: Keep database transactions short to release locks quickly and prevent connection bottlenecks.
+*   **Set ReadOnly Flag**: Mark read-only database queries as `@Transactional(readOnly = true)` to bypass Hibernate dirty-checking calculations and optimize performance.
+*   **Handle Lock Exceptions**: Wrap concurrent update operations in try-catch blocks to catch and handle `OptimisticLockException` gracefully (e.g., retrying the operation).
+
+---
+
+## Common Mistakes
+
+*   **Using Pessimistic locking on high-traffic read queries**: Locking rows excessively, which blocks reader threads and slows down application performance.
+*   **Ignoring Version field requirements**: Omitting `@Version` annotations on critical data tables (like account balances or inventory counts), leading to silent data overrides.
+*   **Mixing non-transactional methods**: Modifying database state outside active transaction boundaries, causing updates to fail or bypass caching pools.
+
+<Callout type="warning" title="Pessimistic Deadlocks">
+  Pessimistic locks block other transactions directly. If multiple threads lock different records in a mismatched order, it can cause database deadlocks. Always acquire locks in a consistent order.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Configure transaction isolation levels to prevent concurrency anomalies.
+*   Optimistic locking uses `@Version` fields to catch concurrent updates during commit.
+*   Pessimistic locking locks rows at the database level (`SELECT FOR UPDATE`).
+*   Mark read-only transactions explicitly to optimize performance.

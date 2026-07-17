@@ -1,14 +1,91 @@
 ---
 title: "Error Handling"
-description: "Learn about Error Handling in our comprehensive Full Stack Guide."
+description: "Master error handling using try-catch blocks, custom exceptions, and global error boundaries."
 ---
 
 # Error Handling
 
-Welcome to the section on **Error Handling**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Error Handling.
+Error handling is the practice of catching and resolving runtime exceptions gracefully. In full-stack web applications, unexpected failures (like network timeouts or database connection drops) must be caught and handled, preventing the application from crashing and providing clear error feedback to users.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding try-catch blocks and custom error shapes is key to building stable applications.
+
+### The try-catch-finally Block
+-   **`try`**: Wraps the block of code that might throw an error.
+-   **`catch`**: Executes if an error occurs inside the `try` block, catching the error object.
+-   **`finally`**: Executes always after the try/catch blocks resolve, regardless of whether an error was thrown. This is ideal for cleaning up resources (e.g. closing database connections or stopping loading indicators).
+
+### Custom Error Types
+You can extend the native JavaScript `Error` class to create custom exceptions (like `ValidationError` or `DatabaseError`). This allows you to handle different error types selectively in your catch blocks.
+
+---
+
+## Code Example
+
+Here is an implementation of a custom API exception and a structured `try-catch-finally` handler:
+
+```javascript
+// Define custom error class for API errors
+class ApiError extends Error {
+    constructor(status, message) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+    }
+}
+
+async function validateAndFetch(url) {
+    let clientLoadingState = true;
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new ApiError(response.status, 'Failed server connection');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof ApiError) {
+            console.error(`Api Failure [Status: ${error.status}]: ${error.message}`);
+        } else {
+            console.error(`Network Exception: ${error.message}`);
+        }
+        throw error;
+    } finally {
+        // Always clear loading states after resolution
+        clientLoadingState = false;
+        console.log('Operation complete. Clean up loading states.');
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Custom Error Classes**: Extend the native `Error` class to differentiate between input validation errors, network errors, and database errors.
+*   **Always use finally for Cleanups**: Place cleanup logic (like stopping loading spinners or closing file handles) inside the `finally` block to ensure it always runs.
+*   **Log Errors with Context**: Log error stack traces alongside contextual metadata (like user IDs or requested endpoints) to make debugging simpler.
+*   **Do Not Swollow Errors**: Avoid catching errors without handling them (e.g. `catch(err) {}`). Always log the error or re-throw it if it cannot be resolved locally.
+
+---
+
+## Common Mistakes
+
+*   **Swallowing exceptions silently**: Catching errors without logging or responding to them, which hides bugs and makes them difficult to track.
+*   **Assuming catch block parameter is type-safe**: Forgetting that the parameter in a `catch(error)` block defaults to `any`/`unknown`. Always check types using `instanceof` before accessing custom properties.
+*   **Throwing string messages directly**: Writing `throw "Error occurred"` instead of throwing a proper `Error` object (e.g. `throw new Error("...")`), which prevents stack trace capture.
+
+<Callout type="warning" title="Global Crash Guard">
+  Always set up global error boundaries or listen for `unhandledrejection` events in the window/process to catch errors that slip past local try-catch blocks.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `try-catch-finally` handles runtime exceptions cleanly.
+*   The `finally` block always executes to handle resource cleanups.
+*   Extend the native `Error` class to build structured custom exceptions.
+*   Never catch an error without logging it or re-throwing it to be handled above.

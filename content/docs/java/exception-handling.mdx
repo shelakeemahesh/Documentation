@@ -1,14 +1,86 @@
 ---
 title: "Exception Handling"
-description: "Learn about Exception Handling in our comprehensive Full Stack Guide."
+description: "Master error handling in Java using try-catch, checked vs unchecked exceptions, and try-with-resources."
 ---
 
 # Exception Handling
 
-Welcome to the section on **Exception Handling**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Exception Handling.
+Exception Handling is the mechanism to handle runtime errors in Java, maintaining program execution flow even when file, network, or query failures occur. Java uses structured exception classes to intercept and recover from errors.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding Exception subclasses and compilation rules prevents system runtime crashes.
+
+### The Exception Class Hierarchy
+All exceptions derive from the `Throwable` class:
+1.  **`Error`**: Fatal problems (like `OutOfMemoryError`) that an application should not try to catch.
+2.  **`Exception`**: Conditions that an application should catch.
+    -   **Checked Exceptions**: Checked by the compiler at compile time (e.g. `IOException`, `SQLException`). They must be declared using `throws` or wrapped in a `try-catch` block.
+    -   **Unchecked Exceptions (RuntimeExceptions)**: Evaluated at runtime (e.g. `NullPointerException`, `IllegalArgumentException`). They do not need to be declared explicitly.
+
+### Try-with-Resources: Automatic Close
+When opening resources (like files or database connections) that implement `AutoCloseable`, use **try-with-resources** syntax. This guarantees that resources are closed automatically when the block exits, preventing resource leaks.
+
+---
+
+## Code Example
+
+Here is an example demonstrating try-with-resources and custom exception mapping in Java:
+
+```java
+package com.devdocs.exceptions;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+// Custom Exception
+class DatabaseConfigException extends RuntimeException {
+    public DatabaseConfigException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+public class ConfigLoader {
+    public void loadConfig(String path) {
+        // Try-with-resources automatically closes the reader when the block exits
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String line = reader.readLine();
+            System.out.println("Config Loaded: " + line);
+        } catch (IOException e) {
+            // Wrap and re-throw exception to preserve stack trace
+            throw new DatabaseConfigException("Failed loading configurations", e);
+        }
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Try-with-Resources**: Always use try-with-resources when opening resources that implement `AutoCloseable` to prevent file descriptor leaks.
+*   **Catch Specific Exceptions**: Avoid catching the generic `Exception` class directly. Catch specific exceptions (like `FileNotFoundException`) to handle errors accurately.
+*   **Do Not Swallow Exceptions**: Avoid catching exceptions without handling them (e.g. an empty `catch` block), as this makes debugging difficult.
+*   **Preserve the Cause**: When wrapping exceptions, pass the original exception to the constructor of the new exception to preserve the stack trace.
+
+---
+
+## Common Mistakes
+
+*   **Swallowing exceptions silently**: Catching exceptions and doing nothing, which hides bugs and prevents them from being tracked.
+*   **Using Exception for normal control flow**: Throwing exceptions to control program flow (like loops or condition boundaries), which slows down performance.
+*   **Forgetting to close resources manually in legacy code**: Failing to close database connections in a `finally` block in pre-Java 7 code, leading to connection leaks.
+
+<Callout type="note" title="Checked vs. Unchecked Trade-off">
+  Modern frameworks (like Spring Boot) prefer unchecked runtime exceptions, as they keep code cleaner by reducing boilerplate throws declarations.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Checked exceptions are validated at compile time; unchecked exceptions are evaluated at runtime.
+*   Use try-with-resources to close AutoCloseable resources automatically.
+*   Always preserve the original cause when throwing custom exceptions.
+*   Avoid catching generic `Exception` or `Throwable` classes directly.

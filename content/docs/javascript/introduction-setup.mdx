@@ -1,14 +1,60 @@
 ---
 title: "Introduction & Setup"
-description: "Learn about Introduction & Setup in our comprehensive Full Stack Guide."
+description: "Configure your local JavaScript runtime using Node.js and browser dev tools."
 ---
 
 # Introduction & Setup
 
-Welcome to the section on **Introduction & Setup**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction & Setup.
+JavaScript is a dynamic, high-level, interpreted programming language that powers client-side interactivity on the web. It has evolved into a versatile language running on servers (via Node.js) and embedded devices.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding JavaScript execution environments is essential for full-stack engineering.
+
+### Browser Runtimes vs. Node.js
+-   **Browser (V8, SpiderMonkey)**: Accesses web-specific APIs like the DOM, `window`, and `fetch` requests.
+-   **Node.js**: Runs JavaScript on servers, accessing system APIs like `fs` (file system) and network sockets.
+
+### The Script Execution Order
+HTML parses from top to bottom. Loading heavy scripts in the `<head>` blocks rendering. Use the `defer` attribute to execute scripts after HTML parsing completes.
+
+---
+
+## Code Example
+
+Here is a standard runtime check script you can run in your terminal or browser console:
+
+```javascript
+// Check active environment capabilities
+const environment = typeof window !== 'undefined' ? 'Browser' : 'Node.js';
+console.log(`Running JavaScript inside: ${environment}`);
+```
+
+---
+
+## Best Practices
+
+*   **Use Strict Mode**: Always write `"use strict"` or use ES modules to prevent implicit global variable creation.
+*   **Keep Node Updated**: Use Node LTS (v20+) to access modern runtime improvements.
+*   **Prefer defer over async**: Use `defer` to maintain execution order for dependent scripts.
+*   **Use linters**: Enforce code consistency using ESLint configs.
+
+---
+
+## Common Mistakes
+
+*   **Omitting defer/async tags**: Writing scripts in the head that block initial rendering.
+*   **Accessing browser globals in Node**: Referencing `window` or `document` inside Node.js scripts.
+*   **Ignoring strict mode**: Running code without strict checks, allowing silent runtime bugs.
+
+<Callout type="note" title="Modern runtimes">
+  Modern alternative JS runtimes like Deno and Bun offer built-in TypeScript support and faster compilation tools.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JavaScript runs in browsers and server-side runtimes like Node.js.
+*   Always use the `defer` tag when loading external scripts in the head.
+*   Enable strict mode rules to catch undeclared variables at runtime.

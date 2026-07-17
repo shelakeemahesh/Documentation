@@ -1,14 +1,84 @@
 ---
 title: "JPA Fundamentals"
-description: "Learn about JPA Fundamentals in our comprehensive Full Stack Guide."
+description: "Understand Jakarta Persistence (JPA), Entity Managers, and entity lifecycle states."
 ---
 
 # JPA Fundamentals
 
-Welcome to the section on **JPA Fundamentals**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for JPA Fundamentals.
+Jakarta Persistence (JPA) is the standard Java specification for Object-Relational Mapping (ORM). JPA declares the core annotations and interfaces, while Hibernate implements the specification. Understanding the entity lifecycle is essential for building predictable persistence layers.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding JPA lifecycle states and EntityManager operations prevents data persistence bugs.
+
+### The Entity Lifecycle States
+Every entity object belongs to one of four states relative to the active persistence context:
+1.  **Transient**: Newly created object instance (via `new User()`). Has no association with a database row or persistence context.
+2.  **Managed (Persistent)**: Associated with a database row and active context. Any changes to object fields are tracked and flushed to the database automatically when the transaction commits.
+3.  **Detached**: Associated with a database row but no longer tracked by an active context (e.g. after calling `session.close()` or `entityManager.clear()`).
+4.  **Removed**: Scheduled for deletion. Will be removed from the database when the transaction commits.
+
+---
+
+## Code Example
+
+Here is an example demonstrating entity states transitions inside a JPA transaction block:
+
+```java
+package com.devdocs.jpa;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+
+record UserEntity(Long id, String name) {}
+
+public class LifecycleApp {
+    public static void demoLifecycle(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+
+        // 1. Transient State (New object, untracked)
+        UserEntity user = new UserEntity(null, "Mahesh");
+
+        // 2. Managed State (Tracked by EntityManager)
+        em.persist(user);
+        user.setName("Sam"); // Hibernate tracks this modification and updates the database automatically
+
+        tx.commit(); // SQL UPDATE query runs automatically during commit flush
+
+        // 3. Detached State (Object exists in DB but is no longer tracked)
+        em.detach(user);
+        user.setName("Alex"); // Database will NOT be updated
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use merge() with Care**: Use `merge()` only to reattach detached entities to an active persistence context; do not use it to save new entities.
+*   **Synchronize updates via Flush**: Understand that the EntityManager synchronizes updates automatically when transactions commit. Avoid calling `flush()` manually unless necessary.
+*   **Clear context on Batch operations**: When performing batch operations, call `entityManager.clear()` regularly to clear the persistence context, preventing memory exhaustion.
+*   **Use Entity Listeners**: Inject logging or auditing hooks using `@PrePersist` and `@PreUpdate` callbacks.
+
+---
+
+## Common Mistakes
+
+*   **Expecting modifications on detached objects to persist**: Changing properties of a detached entity and expecting the database to update automatically.
+*   **Calling persist() on detached objects**: Throwing `PersistenceException` by attempting to run `persist()` on entities containing existing IDs.
+*   **Over-flushing databases**: Triggering manual `flush()` commands repeatedly, which bypasses write-caching and slows down transaction performance.
+
+<Callout type="note" title="Dirty Checking">
+  Hibernate implements Dirty Checking: during transaction commit, it compares managed entities against their snapshot states taken during loading, generating SQL updates automatically for modified properties.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JPA specifies the ORM contract; Hibernate implements the specifications.
+*   Transient entities have no database footprint; Managed entities synchronize field modifications automatically.
+*   Detached entities require `merge()` to re-enter the active persistence context.
+*   Hibernate updates database states during transaction commit flush cycles.

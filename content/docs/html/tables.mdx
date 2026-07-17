@@ -1,14 +1,86 @@
 ---
 title: "Tables"
-description: "Learn about Tables in our comprehensive Full Stack Guide."
+description: "Build structured tables to present complex datasets accessibly in HTML."
 ---
 
 # Tables
 
-Welcome to the section on **Tables**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Tables.
+HTML tables are designed to display tabular data, representing information in structured grids of rows and columns. Building accessible tables requires linking data cells directly to their corresponding header nodes.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding table structure tags is essential for displaying grid data.
+
+### Table Section Layout
+A semantic HTML table is organized into three sections:
+-   **`<thead>`**: Holds the header rows describing the column categories.
+-   **`<tbody>`**: Holds the main data rows.
+-   **`<tfoot>`**: Holds total rows, calculations, or summary items.
+
+### Header Associations: scope and headers
+Screen reader users cannot easily visualize columns. To help them navigate grids:
+-   **`<th>`**: Denotes header cells, styled as bold and centered by default.
+-   **`scope` attribute**: Declares whether a header applies to a row (`scope="row"`) or a column (`scope="col"`).
+
+---
+
+## Code Example
+
+Here is a semantic database status table demonstrating correct header mappings and row scopes:
+
+```html
+<div class="overflow-x-auto border border-zinc-800 rounded-lg">
+    <table class="min-w-full divide-y divide-zinc-800 bg-zinc-950 text-sm">
+        <caption class="sr-only">Local Database Instances Status</caption>
+        <thead class="bg-zinc-900">
+            <tr>
+                <th scope="col" class="px-4 py-3 text-left font-semibold text-zinc-300">Database Name</th>
+                <th scope="col" class="px-4 py-3 text-left font-semibold text-zinc-300">Engine</th>
+                <th scope="col" class="px-4 py-3 text-left font-semibold text-zinc-300">Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+            <tr>
+                <th scope="row" class="px-4 py-3 font-medium text-zinc-200">prod-db-1</th>
+                <td class="px-4 py-3 text-zinc-400 font-mono">PostgreSQL 16</td>
+                <td class="px-4 py-3 text-emerald-400 font-semibold">Active</td>
+            </tr>
+            <tr>
+                <th scope="row" class="px-4 py-3 font-medium text-zinc-200">staging-db-2</th>
+                <td class="px-4 py-3 text-zinc-400 font-mono">MySQL 8.0</td>
+                <td class="px-4 py-3 text-emerald-400 font-semibold">Active</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+```
+
+---
+
+## Best Practices
+
+*   **Provide a Caption**: Add a `<caption>` element inside the table to summarize the table's purpose for screen readers.
+*   **Always Use Semantic Structures**: Do not skip `<thead>` and `<tbody>` groupings; they help the browser optimize paint events.
+*   **Make Tables Responsive**: Wrap tables in an overflow-x scroll container to prevent wide tables from breaking layout grids on mobile screens.
+*   **Use th for Row Titles**: Use a `<th>` element with `scope="row"` as the first cell of a data row to provide clean label references.
+
+---
+
+## Common Mistakes
+
+*   **Using tables for general page layout**: Building visual columns or grids using tables instead of CSS Flexbox or CSS Grid, which degrades accessibility and page responsiveness.
+*   **Omitting scope attributes**: Omitting `scope="col"` or `scope="row"`, which makes it difficult for screen readers to announce cells in relation to their header.
+*   **Nesting complex tables inside tables**: Creating deeply nested tables to bypass CSS configurations, leading to unmaintainable, messy markup.
+
+<Callout type="note" title="Responsive Tables">
+  Always add `overflow-x: auto` to a wrapping parent div. Tables cannot shrink below their minimum content widths and will cause layout overflow bugs on mobile viewports.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   HTML tables must be used for structured dataset grids, not layout designs.
+*   Separate table contents using `<thead>`, `<tbody>`, and `<tfoot>`.
+*   Link headers to their scope using `scope="col"` or `scope="row"`.
+*   Wrap table tags in an overflow wrapper to support responsive scrolling.

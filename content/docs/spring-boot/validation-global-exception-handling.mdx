@@ -1,14 +1,94 @@
 ---
 title: "Validation & Global Exception Handling"
-description: "Learn about Validation & Global Exception Handling in our comprehensive Full Stack Guide."
+description: "Implement input validation constraints and capture API exceptions using ControllerAdvice."
 ---
 
 # Validation & Global Exception Handling
 
-Welcome to the section on **Validation & Global Exception Handling**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Validation & Global Exception Handling.
+Building secure, production-grade APIs requires validating client inputs and handling errors cleanly. Spring Boot provides unified validation annotations and global exception mapping utilities to keep controllers clean and return standard error payloads to clients.
 
 ## Core Concepts
+Understanding request validations and global exception mapping is essential for API stability.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### Jakarta Bean Validation
+Validate incoming request payloads by adding annotations to DTO fields and annotating controller parameters with `@Valid`:
+-   `@NotNull` / `@NotBlank`: Rejects empty or null values.
+-   `@Size(min=X, max=Y)`: Enforces length bounds on strings or collections.
+-   `@Email`: Validates email formats automatically.
+
+### Global Exception Handler: @RestControllerAdvice
+Instead of duplicating try-catch blocks inside controllers, Spring Boot uses `@RestControllerAdvice` to catch exceptions thrown across the application globally. You define specific method handlers annotated with `@ExceptionHandler` to format error responses consistently.
+
+---
+
+## Code Example
+
+Here is an implementation of a validated DTO and a global exception advisor:
+
+```java
+package com.example.demo.exception;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
+
+// 1. Validated Data Transfer Object
+record RegisterRequest(
+    @NotBlank(message = "Username is required")
+    String username,
+    @Email(message = "Invalid email format")
+    String email,
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    String password
+) {}
+
+// 2. Global Exception Advisor
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // Intercept input validation errors
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> 
+            errors.put(error.getField(), error.getDefaultMessage())
+        );
+        return ResponseEntity.badRequest().body(errors); // Returns HTTP 400
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Always Annotate with @Valid**: Ensure you add the `@Valid` annotation to controller parameters (e.g. `public void register(@Valid @RequestBody Request request)`) to trigger validation checks.
+*   **Define Clear Validation Messages**: Provide user-friendly validation messages (using the `message` attribute) to help frontend developers display clear error feedback.
+*   **Return Unified Error JSON Structures**: Standardize your global error response structure (containing status code, error details, and timestamp) across all APIs.
+*   **Map Custom Business Exceptions**: Create custom runtime exceptions (like `UserNotFoundException`) and define dedicated `@ExceptionHandler` methods for them.
+
+---
+
+## Common Mistakes
+
+*   **Forgetting the @Valid annotation**: Omitting `@Valid` on controller parameters, which silently bypasses all validation constraints on the DTO.
+*   **Leaking internal stack traces**: Returning raw exception traces in production API responses, exposing database schema names or class structures to potential attackers.
+*   **Using manual validation blocks in controllers**: Writing custom validation statements inside controller methods, bloating code and violating the single responsibility principle.
+
+<Callout type="warning" title="Security Risk: Stack Traces">
+  Never return raw exception stack traces to API clients in production. Catch exceptions globally and map them to clean, localized error structures to protect system infrastructure details.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Use Jakarta annotations on DTO fields to define validation constraints.
+*   Annotate controller parameters with `@Valid` to trigger validation checks.
+*   Use `@RestControllerAdvice` to decouple exception handling from business controllers.
+*   Standardize error payloads to return consistent JSON structures to clients.

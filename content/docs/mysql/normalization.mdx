@@ -1,14 +1,76 @@
 ---
 title: "Normalization"
-description: "Learn about Normalization in our comprehensive Full Stack Guide."
+description: "Master database design normalization rules (1NF, 2NF, 3NF) and denormalization trade-offs."
 ---
 
 # Normalization
 
-Welcome to the section on **Normalization**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Normalization.
+Database Normalization is the process of structuring relational database schemas to minimize data redundancy and prevent data anomalies (insert, update, and delete anomalies). Denormalization is the deliberate introduction of redundancy to optimize query performance.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding normalization stages and performance trade-offs is key to schema design.
+
+### Normalization Forms (1NF to 3NF)
+1.  **First Normal Form (1NF)**: Every table cell must contain a single, atomic value, and there must be no repeating groups or columns.
+2.  **Second Normal Form (2NF)**: Must satisfy 1NF, and all non-key columns must depend entirely on the primary key (no partial dependencies on composite keys).
+3.  **Third Normal Form (3NF)**: Must satisfy 2NF, and non-key columns must not depend transitively on other non-key columns (no transitive dependencies).
+
+### Normalization vs. Denormalization
+-   **Normalized Schemas**: Minimize storage footprints and prevent data update anomalies. However, complex reports require multiple SQL joins, slowing down read times.
+-   **Denormalized Schemas**: Duplicate specific columns (like customer names inside orders tables) to eliminate joins and speed up read queries. This introduces update anomalies, requiring synchronous updates across tables.
+
+---
+
+## Code Example
+
+Here is an example demonstrating the refactoring of a table containing transitive dependencies (violating 3NF) into a normalized structure:
+
+```sql
+-- Unnormalized Table (Violates 3NF: department_name depends on department_id, not employee_id)
+-- employee_id (PK) -> department_id -> department_name
+-- CREATE TABLE employees (id INT, name VARCHAR(50), dept_id INT, dept_name VARCHAR(50));
+
+-- Normalized Tables (3NF: Transitive dependency removed)
+CREATE TABLE departments (
+    id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    department_id INT NOT NULL,
+    FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+```
+
+---
+
+## Best Practices
+
+*   **Normalize to 3NF by Default**: Structure database schemas to 3NF in OLTP (Online Transaction Processing) systems to prevent data anomalies.
+*   **Denormalize for OLAP Read Speed**: Denormalize schemas (using star or snowflake schemas) in data warehouses to speed up analytical reports.
+*   **Use Triggers to Keep Duplicates Sync**: When denormalizing columns, use database triggers or application transaction gates to keep duplicate columns in sync.
+*   **Validate Atomicity**: Check that array collections (like list tags or phone numbers) are separated into child tables rather than joined in single cells.
+
+---
+
+## Common Mistakes
+
+*   **Storing comma-separated strings inside a single column**: Violating 1NF by packing multiple values into a single string cell, making filtering difficult.
+*   **Ignoring transitive dependencies in transaction tables**: Allowing employee zip codes and states to live inside the employee table, causing anomalies when addresses change.
+*   **Denormalizing prematurely**: Duplicating columns without measuring query performance first, leading to data inconsistency bugs.
+
+<Callout type="note" title="OLTP vs OLAP Design">
+  OLTP databases require normalized tables (3NF) to support frequent write operations. OLAP data warehouses use denormalized structures to support high-performance analytical queries.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Database normalization removes redundancy and prevents write anomalies.
+*   3NF removes transitive dependencies between non-key columns.
+*   Denormalization speed up read queries by duplicating data, at the cost of write overhead.
+*   Atomic cells must hold single values; resolve lists using child tables.

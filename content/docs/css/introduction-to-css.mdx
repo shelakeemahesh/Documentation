@@ -1,14 +1,74 @@
 ---
 title: "Introduction to CSS"
-description: "Learn about Introduction to CSS in our comprehensive Full Stack Guide."
+description: "Learn the fundamentals of CSS styling, linking methods, syntax, and stylesheet rules."
 ---
 
 # Introduction to CSS
 
-Welcome to the section on **Introduction to CSS**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction to CSS.
+CSS (Cascading Style Sheets) is the stylesheet language used to style the visual presentation of HTML elements. It controls layout grids, colors, typography, and responsive scaling, separating structural content from presentation styles.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the role of stylesheets and presentation layers is essential for building web user interfaces.
+
+### The Cascading Order
+CSS styles cascade from top to bottom. If multiple rules target the same element, the browser resolves conflict based on rule specificity, source order, and inheritance rules.
+
+### Ways to Link CSS
+-   **External Stylesheet (Recommended)**: Linked via `<link rel="stylesheet" href="main.css">` inside the HTML head, allowing clean styles caching.
+-   **Internal Style Blocks**: Placed inside `<style>` tags directly in the HTML head.
+-   **Inline Styles**: Defined using style attributes directly on HTML tags, bypassing Cascading rules.
+
+---
+
+## Code Example
+
+Here is a standard, correct CSS block demonstrating selectors, properties, and comments:
+
+```css
+/* Target the body landmark */
+body {
+    margin: 0;
+    font-family: 'Outfit', system-ui, sans-serif;
+    background-color: #09090b;
+    color: #f4f4f5;
+    line-height: 1.5;
+}
+
+/* Target main wrapper container */
+.main-container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer External CSS**: Keep presentation separate from HTML markup to leverage browser caching.
+*   **Reset Default Styles**: Use a standard CSS reset (like Normalize.css) to eliminate default margin and padding differences across browsers.
+*   **Organize Style Sheets**: Group style rules by UI components or layout layout templates.
+*   **Use Meaningful Class Names**: Avoid vague classes like `.box1` or `.style-red`; name elements semantically like `.card-header`.
+
+---
+
+## Common Mistakes
+
+*   **Overusing Inline Styles**: Writing styles directly on HTML elements, which makes updating styles difficult across pages.
+*   **Ignoring Default CSS Resets**: Assuming all browsers share identical default margins and padding parameters.
+*   **Hardcoding Absolute Colors**: Bypassing CSS Variables and hardcoding absolute color hex codes across multiple styles sheet definitions.
+
+<Callout type="note" title="Inheritance Behavior">
+  Many typographic styles (like `font-family`, `color`, and `line-height`) inherit downward to child nodes, whereas layout styles (like `width`, `margin`, and `border`) do not inherit.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   CSS dictates visual layouts and separates presentation from HTML structures.
+*   Always use external stylesheets to leverage browser cache caching.
+*   Reset default browser padding/margin metrics before building layout grids.
+*   Typographic rules inherit downwards; structural layout rules do not.

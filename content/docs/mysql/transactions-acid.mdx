@@ -1,14 +1,75 @@
 ---
 title: "Transactions & ACID"
-description: "Learn about Transactions & ACID in our comprehensive Full Stack Guide."
+description: "Master database transactions, ACID properties, isolation levels, and InnoDB locking states."
 ---
 
 # Transactions & ACID
 
-Welcome to the section on **Transactions & ACID**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Transactions & ACID.
+A transaction is a logical unit of database processing. To ensure data consistency even during crashes or network drops, MySQL's InnoDB engine enforces the **ACID** properties, managing transaction isolation levels to balance concurrency and consistency.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding transaction isolation levels and concurrency anomalies is essential for writing reliable backend code.
+
+### ACID Properties
+-   **Atomicity**: All operations in a transaction succeed, or the entire transaction is rolled back. No partial execution is allowed.
+-   **Consistency**: A transaction moves the database from one valid state to another, maintaining all schema constraints.
+-   **Isolation**: Concurrent transactions execute independently without interfering with each other.
+-   **Durability**: Once committed, transaction updates are permanently saved in database storage, surviving system crashes.
+
+### Transaction Isolation Levels
+1.  **Read Uncommitted**: Lowest isolation. Allows **Dirty Reads** (reading uncommitted updates from other transactions).
+2.  **Read Committed**: Prevents dirty reads. Allows **Non-Repeatable Reads** (re-reading a row within a transaction and finding different data because another transaction committed updates in the meantime).
+3.  **Repeatable Read (MySQL Default)**: Prevents dirty and non-repeatable reads. InnoDB also mitigates **Phantom Reads** (re-running a query and finding new matching rows inserted by another committed transaction) using next-key locking.
+4.  **Serializable**: Highest isolation. Locks rows using shared locks, executing transactions sequentially. Slowest performance.
+
+---
+
+## Code Example
+
+Here is an example demonstrating transaction boundary controls in MySQL:
+
+```sql
+-- 1. Set isolation level for current session
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- 2. Start Transaction block
+START TRANSACTION;
+
+-- 3. Perform atomic operations
+UPDATE accounts SET balance = balance - 100.00 WHERE id = 101;
+UPDATE accounts SET balance = balance + 100.00 WHERE id = 102;
+
+-- 4. Commit changes to save permanently
+COMMIT;
+```
+
+---
+
+## Best Practices
+
+*   **Prefer Default Isolation (Repeatable Read)**: Keep MySQL's default `REPEATABLE READ` isolation level active; it balances concurrency and consistency well.
+*   **Keep Transactions Small**: Minimize the duration of transaction blocks to release row locks quickly and prevent connection bottlenecks.
+*   **Use Read-Only Transactions**: Mark read-only query blocks explicitly (`START TRANSACTION READ ONLY`) to allow MySQL to optimize performance.
+*   **Handle Deadlock Rollbacks**: Write application code that catches deadlock errors and automatically retries the transaction.
+
+---
+
+## Common Mistakes
+
+*   **Running transaction blocks without commit boundaries**: Forgetting to call `COMMIT` or `ROLLBACK`, leaving connections open and blocking database resources.
+*   **Using Serialized isolation on high-throughput endpoints**: Locking rows excessively, causing transaction timeouts under load.
+*   **Mixing non-transactional engines**: Mixing InnoDB and non-transactional tables in a single transaction, preventing complete rollbacks on failure.
+
+<Callout type="warning" title="Implicit Commits">
+  Certain SQL commands (like `ALTER TABLE` or `DROP DATABASE`) trigger implicit commits automatically. If you run these inside a transaction block, the active transaction commits instantly and cannot be rolled back.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   ACID properties guarantee transaction safety and database consistency.
+*   MySQL default isolation is `REPEATABLE READ`, which prevents dirty and non-repeatable reads.
+*   Keep transactions small to release row locks quickly.
+*   DDL commands trigger implicit commits in MySQL and cannot be rolled back.

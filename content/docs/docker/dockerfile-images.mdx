@@ -1,14 +1,81 @@
 ---
-title: "Dockerfile & Images"
-description: "Learn about Dockerfile & Images in our comprehensive Full Stack Guide."
+title: "Dockerfiles & Images"
+description: "Master Dockerfile instructions, image compilation layers, and registry configurations."
 ---
 
-# Dockerfile & Images
+# Dockerfiles & Images
 
-Welcome to the section on **Dockerfile & Images**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Dockerfile & Images.
+A **Docker Image** is a read-only template containing instructions to build a container. A **Dockerfile** is a text script containing the sequential instructions required to compile that image layer-by-layer.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding Dockerfile instructions and layer caching is key to compiling optimized images.
+
+### Primary Dockerfile Instructions
+-   **`FROM`**: Declares the base parent image to build upon.
+-   **`WORKDIR`**: Sets the default working directory for subsequent instructions.
+-   **`COPY`** / **`ADD`**: Copies files from the host machine into the image filesystem.
+-   **`RUN`**: Executes shell commands during the image build phase, creating a new image layer.
+-   **`CMD`** vs. **`ENTRYPOINT`**: `ENTRYPOINT` sets the binary executable that always runs on container startup, while `CMD` defines the default parameters passed to it (which can be overridden by users).
+
+### Image Layer Caching
+Each instruction in a Dockerfile creates a read-only layer. During builds, Docker reuse cached layers if the instruction and its referenced files are unchanged. Order your instructions from least-frequently changed to most-frequently changed to speed up build runs.
+
+---
+
+## Code Example
+
+Here is an implementation of a standard Dockerfile packaging a Node.js application:
+
+```dockerfile
+# 1. Base parent image
+FROM node:18-alpine
+
+# 2. Configure active directory
+WORKDIR /app
+
+# 3. Copy package configs first to leverage layer caching
+COPY package*.json ./
+
+# 4. Install dependencies
+RUN npm ci --only=production
+
+# 5. Copy remaining application files
+COPY . .
+
+# 6. Expose internal port
+EXPOSE 3000
+
+# 7. Start command
+CMD ["node", "server.js"]
+```
+
+---
+
+## Best Practices
+
+*   **Copy package configs first**: Copy and install dependency files before copying remaining source files to maximize layer cache hit rates.
+*   **Exclude files via .dockerignore**: Create a `.dockerignore` file to exclude local logs, node_modules, and git folders from being copied into the image.
+*   **Prefer COPY over ADD**: Use `COPY` for copying local files; use `ADD` only if you need to fetch remote URLs or extract tar files.
+*   **Combine RUN commands**: Combine related RUN statements (like updating packages and installing libraries) using `&&` to minimize image layer bloat.
+
+---
+
+## Common Mistakes
+
+*   **Copying local node_modules folders**: Neglecting `.dockerignore` filters, causing local host dependency folders to overwrite image node structures.
+*   **Using CMD without array brackets**: Writing `CMD node server.js` (string mode) instead of `CMD ["node", "server.js"]` (exec mode), which wraps commands in a shell process and prevents sigterm signals from shutting down containers cleanly.
+*   **Changing lines at the top of Dockerfiles frequently**: Placing frequently modified commands (like `COPY . .`) above dependencies installs, forcing Docker to rebuild all subsequent layers.
+
+<Callout type="warning" title="Signal Forwarding">
+  Always write `CMD` and `ENTRYPOINT` in exec JSON array format: `["node", "server.js"]`. String formatting wraps the executable in `/bin/sh -c`, which does not forward shutdown signals (SIGTERM) to your application process.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   A Dockerfile contains instructions to build read-only images.
+*   Order instructions from least to most frequently changed to speed up build caching.
+*   Use `.dockerignore` to exclude local build assets and keep image sizes minimal.
+*   Write start commands in JSON array format to support clean containers shutdown.

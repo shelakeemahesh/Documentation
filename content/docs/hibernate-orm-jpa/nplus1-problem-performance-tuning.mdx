@@ -1,14 +1,82 @@
 ---
 title: "N+1 Problem & Performance Tuning"
-description: "Learn about N+1 Problem & Performance Tuning in our comprehensive Full Stack Guide."
+description: "Identify and resolve the N+1 query problem using fetch joins, batch sizing, and entity graphs."
 ---
 
 # N+1 Problem & Performance Tuning
 
-Welcome to the section on **N+1 Problem & Performance Tuning**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for N+1 Problem & Performance Tuning.
+The N+1 query problem is one of the most common performance bottlenecks in ORM applications. It occurs when a query fetches parent entities, and Hibernate executes a separate SQL query for each child association, resulting in hundreds of unnecessary database roundtrips.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding the N+1 problem origin and resolution techniques is key to database performance tuning.
+
+### The N+1 Query Origin
+Consider a bidirectional One-to-Many relationship between `Customer` and `Order`. If you load a list of 100 Customers and loop over them to access their Orders, Hibernate will execute:
+-   **1 Query**: To fetch all 100 Customers.
+-   **N (100) Queries**: A separate SELECT query for *each* Customer to load their associated Orders.
+This results in **101 queries** instead of a single join query, slowing down performance.
+
+### Resolution Strategies
+-   **JPQL Fetch Join (Recommended)**: Use `JOIN FETCH` in your JPQL queries to instruct Hibernate to load parent and child associations in a single SQL query.
+-   **Entity Graphs**: Define declarative fetch graphs (`@EntityGraph`) to specify which relationships to fetch eagerly for specific queries.
+-   **Batch Fetching**: Use `@BatchSize` on collection mappings to fetch child collections in batches (e.g. 20 at a time) instead of loading them one-by-one.
+
+---
+
+## Code Example
+
+Here is a comparison between an unoptimized query and an optimized Fetch Join query:
+
+```java
+package com.devdocs.performance;
+
+import jakarta.persistence.EntityManager;
+import java.util.List;
+
+class Customer { }
+
+public class CustomerService {
+    // 1. Unoptimized: Triggers N+1 queries when accessing child collections
+    public List<Customer> getAllCustomers(EntityManager em) {
+        return em.createQuery("FROM Customer c", Customer.class).getResultList();
+    }
+
+    // 2. Optimized: Fetches parent and child associations in a single SQL JOIN query
+    public List<Customer> getCustomersWithOrders(EntityManager em) {
+        return em.createQuery(
+            "SELECT DISTINCT c FROM Customer c JOIN FETCH c.orders", Customer.class
+        ).getResultList();
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use JOIN FETCH for Custom Reports**: Use `JOIN FETCH` when loading parent entities with their children to display lists or reports.
+*   **Configure @BatchSize globally**: Set a global batch fetch size (e.g. 20–50) in your configuration to limit the impact of accidental N+1 queries.
+*   **Verify SQL queries in development**: Monitor SQL logs during development to ensure Hibernate executes the expected number of queries.
+*   **Never Use EAGER Fetching**: Avoid setting `@OneToMany(fetch = FetchType.EAGER)`, as it forces Hibernate to load child collections eagerly even when they are not needed.
+
+---
+
+## Common Mistakes
+
+*   **Accessing lazy collections inside loops**: Iterating over parent entities and calling getters on lazy collections, triggering N separate SQL queries.
+*   **Using JOIN instead of JOIN FETCH**: Writing `JOIN` inside JPQL, which filters records but does not load child properties into the persistence context.
+*   **Using multiple fetch joins in a single query**: Combining multiple collection fetch joins in a single query, which can create a Cartesian product and exhaust memory.
+
+<Callout type="tip" title="Cartesian Product Warning">
+  Avoid fetch joining multiple collection associations (e.g., fetching both `orders` and `addresses` on a Customer) in a single query. This creates a Cartesian product, multiplying the number of returned rows. Fetch them sequentially or use `@BatchSize` instead.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   The N+1 problem occurs when Hibernate executes a query for each child association.
+*   Resolve N+1 query issues by using JPQL `JOIN FETCH` statements.
+*   Define `@EntityGraph` for declarative control over eager loading requirements.
+*   Configure `@BatchSize` to fetch child collections in batches, mitigating performance issues.

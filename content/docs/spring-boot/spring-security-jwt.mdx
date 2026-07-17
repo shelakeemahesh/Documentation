@@ -1,14 +1,91 @@
 ---
 title: "Spring Security & JWT"
-description: "Learn about Spring Security & JWT in our comprehensive Full Stack Guide."
+description: "Secure Spring Boot endpoints using spring-security configurations and JWT authentication filters."
 ---
 
 # Spring Security & JWT
 
-Welcome to the section on **Spring Security & JWT**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Spring Security & JWT.
+Security is a critical requirement for production APIs. Spring Security provides comprehensive authentication and authorization filters, allowing you to secure endpoints and authenticate users statelessly using JSON Web Tokens (JWT).
 
 ## Core Concepts
+Understanding the security filter chain and token-based authentication is key to API security.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### The Security Filter Chain
+Spring Security operates as a chain of servlet filters that intercept every incoming request. The filters handle tasks like CORS configuration, CSRF prevention, session validation, and path authorization rules before routing requests to controllers.
+
+### Stateless Authentication with JWT
+For microservices and modern APIs, session-based state management does not scale well. We use **JWT (JSON Web Tokens)** to handle authentication statelessly:
+1.  **Login**: User sends credentials. The server validates them and returns a signed JWT.
+2.  **API Requests**: The client includes the token in the `Authorization` header (`Bearer <token>`).
+3.  **Verification**: A custom security filter intercepts the request, validates the token signature, and extracts user details to set authentication context.
+
+---
+
+## Code Example
+
+Here is an implementation of a custom JWT filter that intercepts requests and validates token scopes:
+
+```java
+package com.example.demo.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;
+
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, java.io.IOException {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            // Perform token validation and signature check (mock logic)
+            boolean isValid = true; 
+            
+            if (isValid) {
+                // Set authenticated user context in SecurityContextHolder
+            }
+        }
+
+        // Continue filter execution chain
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Constructor Injection for Configurations**: Declare security configuration beans using constructor injection to keep dependencies clean.
+*   **Disable Sessions for REST APIs**: Configure sessions as stateless (`SessionCreationPolicy.STATELESS`) when building token-based APIs.
+*   **Encrypt Passwords**: Always encrypt passwords using a secure encoder (like `BCryptPasswordEncoder`) before persisting them.
+*   **Configure Method-Level Security**: Add `@PreAuthorize("hasRole('ADMIN')")` annotations to controller methods to secure endpoints granularly.
+
+---
+
+## Common Mistakes
+
+*   **Storing raw passwords in the database**: Persisting plain text credentials, which is a major security vulnerability.
+*   **Ignoring CORS settings**: Leaving CORS settings unconfigured, which blocks frontend requests or exposes APIs to unauthorized origins.
+*   **Leaving permitAll() open in production**: Accidental security gaps caused by wildcards permitting public access to administrative endpoints.
+
+<Callout type="warning" title="JWT Secret Keys Security">
+  Never commit JWT signing keys to source control. Set high-entropy secret keys (minimum 256-bit) and inject them dynamically via environment variables in production.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   The Security Filter Chain intercepts every incoming API request.
+*   JWT enables stateless authentication, eliminating the need to store session data on the server.
+*   Always hash user passwords using BCrypt before database persistence.
+*   Secure routes granularly using method-level `@PreAuthorize` annotations.

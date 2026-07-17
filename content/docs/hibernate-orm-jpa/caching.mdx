@@ -1,14 +1,79 @@
 ---
-title: "Caching (First-Level, Second-Level)"
-description: "Learn about Caching (First-Level, Second-Level) in our comprehensive Full Stack Guide."
+title: "Caching in Hibernate"
+description: "Optimize database access performance in Hibernate using First-Level, Second-Level, and Query Caches."
 ---
 
-# Caching (First-Level, Second-Level)
+# Caching in Hibernate
 
-Welcome to the section on **Caching (First-Level, Second-Level)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Caching (First-Level, Second-Level).
+Database queries are often the primary performance bottleneck in backend systems. Hibernate provides a layered caching architecture (First-Level, Second-Level, and Query caches) to store entity objects in memory, reducing the number of SQL queries executed against the database.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding cache tiers and lifecycle scopes is key to optimizing database performance.
+
+### First-Level Cache (L1 Cache)
+-   **Scope**: Scoped to the active `Session` object. Shared only within the current transaction thread.
+-   **Behavior**: Enabled by default and cannot be disabled. If you query the same entity multiple times within a single session, Hibernate returns the cached object directly without running duplicate SQL SELECT statements.
+
+### Second-Level Cache (L2 Cache)
+-   **Scope**: Scoped to the `SessionFactory` object. Shared globally across all application threads and sessions.
+-   **Behavior**: Disabled by default. You configure external caching libraries (like Ehcache or Infinispan) to cache entity properties, avoiding database reads when entities are queried across different transactions.
+
+### Query Cache
+-   Stores the results of specific queries (lists of entity IDs). Must be used in combination with the Second-Level Cache to prevent performance issues.
+
+---
+
+## Code Example
+
+Here is an implementation of Second-Level Caching configuration on an entity class:
+
+```java
+package com.devdocs.caching;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+@Entity
+@Table(name = "products")
+// Configure L2 Caching with Read-Write concurrency strategy
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "productCache")
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Read-Write for Read-Heavy Entities**: Use `CacheConcurrencyStrategy.READ_WRITE` for entities that are frequently queried but rarely updated.
+*   **Use Nonstrict-Read-Write for Tolerant Data**: Use `NONSTRICT_READ_WRITE` for data where minor consistency delays are acceptable.
+*   **Evict Cache on Bulk Updates**: When performing bulk updates via native SQL, evict cache regions manually to prevent stale cache data.
+*   **Monitor Cache Hit Rates**: Enable Hibernate statistics properties (`generate_statistics: true`) to monitor cache hit rates in production.
+
+---
+
+## Common Mistakes
+
+*   **Enabling L2 cache without query cache validation**: Caching queries that frequently return dynamic results, wasting memory on transient data.
+*   **Using Read-Only strategy on mutable entities**: Setting `CacheConcurrencyStrategy.READ_ONLY` on entities that are updated, causing Hibernate to throw runtime update exceptions.
+*   **Ignoring stale cache state on external DB updates**: Updating database rows directly via external SQL scripts, leaving stale data in the application's L2 cache.
+
+<Callout type="note" title="L1 Cache Isolation">
+  The First-Level Cache is bound to the current Session. If multiple threads run transactions concurrently, they maintain separate L1 caches, preventing dirty reads between sessions.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   First-Level Cache is session-scoped, enabled by default, and cannot be disabled.
+*   Second-Level Cache is SessionFactory-scoped, storing entity data across transactions.
+*   Configure L2 caching strategies (`READ_ONLY`, `READ_WRITE`) based on update frequencies.
+*   Enable statistics monitoring to tune cache sizes and lifetimes.

@@ -1,14 +1,69 @@
 ---
-title: "Introduction to Containers"
-description: "Learn about Introduction to Containers in our comprehensive Full Stack Guide."
+title: "Introduction to Containers & Docker"
+description: "Learn containerization principles, Docker architecture, and run your first container."
 ---
 
-# Introduction to Containers
+# Introduction to Containers & Docker
 
-Welcome to the section on **Introduction to Containers**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Introduction to Containers.
+Docker is an open-source platform that automates deploying applications inside lightweight, portable containers. Containers bundle an application's code with all its dependencies, ensuring it runs reliably across different development and production environments.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding containerization and Docker architecture layers is essential for modern backend systems.
+
+### Containers vs. Virtual Machines (VMs)
+-   **Virtual Machines**: Include a full guest operating system (OS) running on top of a hypervisor. They are heavy, slow to boot, and consume significant memory resources.
+-   **Containers**: Share the host OS kernel, isolating the application process in user space. They are lightweight, start in milliseconds, and share host memory efficiently.
+
+### Docker Engine Architecture
+-   **Docker Daemon (dockerd)**: The background service that manages Docker objects (images, containers, networks, volumes).
+-   **Docker Client (docker CLI)**: Command-line tool used to send commands to the daemon (e.g. `docker run`).
+-   **Docker Registry (Docker Hub)**: Centralized registry where Docker images are stored and shared.
+
+---
+
+## Code Example
+
+Here is the standard terminal command configuration to install, test, and query container runtimes:
+
+```bash
+# 1. Pull and run standard Nginx container from Docker Hub
+docker run --name web-server -d -p 8080:80 nginx
+
+# 2. Query status of active containers
+docker ps
+
+# 3. Stop and remove container instance
+docker stop web-server
+docker rm web-server
+```
+
+---
+
+## Best Practices
+
+*   **Use Official Base Images**: Always build your custom images using official base images (like `node:alpine` or `openjdk:17-slim`) to ensure security patches.
+*   **Minimize Image Layers**: Combine related shell commands inside Dockerfiles using `&&` to reduce image size.
+*   **Never Run as Root**: Enforce non-root execution permissions inside containers using the `USER` instruction to reduce security risks.
+*   **Pin Version Tags**: Avoid using the `latest` tag in production configurations; always pin explicit version numbers (e.g. `nginx:1.25.1`).
+
+---
+
+## Common Mistakes
+
+*   **Using containers as mutable VMs**: Modifying configurations manually inside running containers, losing changes when containers restart.
+*   **Leaving unused images active**: Accumulating outdated images, exhausting local host storage space. Clean them up regularly using `docker system prune`.
+*   **Exposing internal ports unnecessarily**: Publishing internal ports to host interfaces, bypassing ingress gateways.
+
+<Callout type="note" title="Kernel Sharing">
+  Because containers share the host kernel, you cannot run a native Windows container on a Linux host, or vice-versa, without using virtualization layers.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Containers share the host OS kernel, making them lighter than Virtual Machines.
+*   The Docker Client sends commands to the background Docker Daemon.
+*   Avoid using the `latest` tag in production; pin explicit version tags.
+*   Clean up unused images regularly to free up local disk space.

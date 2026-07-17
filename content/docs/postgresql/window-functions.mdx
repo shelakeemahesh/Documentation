@@ -1,14 +1,74 @@
 ---
 title: "Window Functions"
-description: "Learn about Window Functions in our comprehensive Full Stack Guide."
+description: "Master analytical window functions in PostgreSQL, including OVER, PARTITION BY, and ranking functions."
 ---
 
 # Window Functions
 
-Welcome to the section on **Window Functions**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Window Functions.
+Window Functions perform calculations across a set of table rows that are related to the current row. Unlike standard aggregate functions (`SUM`, `AVG`), which collapse rows into a single summary row, window functions perform calculations while keeping all rows distinct.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding window partition scopes and ranking calculations is key to building analytical queries.
+
+### The OVER Clause
+The `OVER` clause defines the window (subset of rows) to perform the calculation. You configure:
+-   **`PARTITION BY`**: Groups rows into separate partitions (similar to `GROUP BY` but keeping row identities distinct).
+-   **`ORDER BY`**: Dictates the sorting order of rows inside the partition window.
+
+### Key Window Functions
+-   **`ROW_NUMBER()`**: Assigns a sequential integer to each row in a partition, starting at 1.
+-   **`RANK()`**: Assigns ranking positions. If rows share identical values, they receive the same rank, skipping subsequent rank numbers.
+-   **`DENSE_RANK()`**: Similar to `RANK()`, but does not skip rank numbers when duplicates occur.
+-   **`LAG()` / `LEAD()`**: Fetches values from preceding or subsequent rows in the partition window without needing self-joins.
+
+---
+
+## Code Example
+
+Here is an example demonstrating salary rankings inside departments using the `DENSE_RANK()` window function:
+
+```sql
+-- Rank employees inside their departments based on salary levels
+SELECT 
+    employee_name,
+    department_id,
+    salary,
+    -- Calculate rank inside department partition window
+    DENSE_RANK() OVER (
+        PARTITION BY department_id 
+        ORDER BY salary DESC
+    ) AS salary_rank
+FROM employees;
+```
+
+---
+
+## Best Practices
+
+*   **Use Window Functions instead of Self-Joins**: Use `LAG` or `LEAD` to query adjacent row values rather than writing slow self-joins.
+*   **Filter Window Outputs using CTEs**: Window functions cannot be referenced directly in `WHERE` clauses. Wrap queries inside a Common Table Expression (CTE) to filter window outputs.
+*   **Avoid Deep Sorting in Partition Windows**: Minimize partition sorting scales to prevent query speed bottlenecks under load.
+*   **Keep Window Definitions Clean**: Use the `WINDOW` keyword to define reusable window configurations inside a query.
+
+---
+
+## Common Mistakes
+
+*   **Referencing window functions in WHERE clauses**: Writing queries like `WHERE ROW_NUMBER() = 1`, which throws syntax errors. Wrap the query in a CTE instead.
+*   **Confusing RANK and DENSE_RANK**: Using `RANK()` and getting gaps in your rankings (e.g. 1, 2, 2, 4) when you wanted sequential rankings (e.g. 1, 2, 2, 3).
+*   **Omitting ORDER BY in ranking windows**: Omitting the `ORDER BY` clause inside ranking windows, leading to arbitrary rank values.
+
+<Callout type="note" title="CTE Wrapping Example">
+  To filter for top ranked rows, wrap the window query inside a CTE: 
+  `WITH ranked_employees AS (SELECT name, DENSE_RANK() OVER(...) as rank FROM employees) SELECT * FROM ranked_employees WHERE rank = 1;`
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Window functions perform aggregate calculations while maintaining distinct rows.
+*   The `PARTITION BY` clause groups rows into separate calculation windows.
+*   Use `DENSE_RANK` to rank elements sequentially without skipping position numbers.
+*   Wrap window queries in a CTE to filter outputs using a `WHERE` clause.

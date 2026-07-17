@@ -1,14 +1,85 @@
 ---
 title: "Responsive Design & Media Queries"
-description: "Learn about Responsive Design & Media Queries in our comprehensive Full Stack Guide."
+description: "Build layouts that scale dynamically across screens using media queries, fluid grids, and responsive units."
 ---
 
 # Responsive Design & Media Queries
 
-Welcome to the section on **Responsive Design & Media Queries**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Responsive Design & Media Queries.
+Responsive Design is the practice of building web pages that adapt their layout, typography, and image sizes to the user's device screen, providing an optimal reading and interaction experience on mobile, tablet, and desktop viewports.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding responsive breakpoints and units is essential for building adaptive layouts.
+
+### Mobile-First Design Strategy
+Mobile-first design involves writing styles for small mobile devices first, and then using progressive enhancement (via `@media (min-width: ...)` queries) to add layout complexities as screen sizes expand. This reduces mobile CSS footprints and improves page load speed on mobile devices.
+
+### Media Queries and Breakpoints
+Media Queries allow you to apply CSS rules selectively based on device characteristics (like width or orientation). Common breakpoint standards include:
+-   Mobile (default): `< 640px`
+-   Tablet: `@media (min-width: 768px)`
+-   Laptop: `@media (min-width: 1024px)`
+-   Desktop: `@media (min-width: 1280px)`
+
+### Absolute vs. Relative Units
+-   **Absolute**: Pixels (`px`) remain identical on all devices, breaking layout responsiveness.
+-   **Relative**: Percentage (`%`), viewport width/height (`vw`/`vh`), and typography units (`em`/`rem`) scale dynamically based on font-sizes or viewport dimensions.
+
+---
+
+## Code Example
+
+Here is a progressively enhanced mobile-first sidebar layout query:
+
+```css
+/* Mobile default styles (single-column layout) */
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+/* Progressively enhance for Tablets & Laptops (Dual-column split) */
+@media (min-width: 768px) {
+    .layout-wrapper {
+        flex-direction: row;
+        gap: 32px;
+        padding: 32px;
+    }
+    
+    .sidebar {
+        width: 280px;
+        flex-shrink: 0;
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Design Mobile-First**: Default to mobile styles first to keep code simpler and cleaner.
+*   **Use rem for Typography**: Define font sizes using `rem` units (which are relative to the root `<html>` font-size) to respect user accessibility configurations.
+*   **Avoid Device-Specific Breakpoints**: Define breakpoints based on content layout breaks rather than targeting specific smartphone models.
+*   **Configure Viewport Tags**: Ensure the viewport meta tag is declared in your HTML header to prevent mobile zooming defaults.
+
+---
+
+## Common Mistakes
+
+*   **Hardcoding absolute pixel widths on containers**: Using `width: 960px` which forces horizontal scrolls on mobile viewports. Use `max-width: 100%` instead.
+*   **Using em instead of rem for typography**: Using `em` inside nested structures, which causes font-size scaling to compound and grow exponentially.
+*   **Using max-width queries defensively**: Confusing min-width and max-width bounds, resulting in styling conflicts where mobile rules collide with desktop rules.
+
+<Callout type="tip" title="Use relative font scaling">
+  Setting `font-size: 1rem` matches the browser's default font size (usually `16px`). If a user changes their browser's default font size, `rem` text adapts automatically.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Design mobile-first to optimize layouts for small viewports progressively.
+*   Use `rem` for accessibility-friendly typography and spacing.
+*   Define media query breakpoints based on where content layout breaks, not device models.
+*   Never use absolute pixel widths on primary page layout containers.

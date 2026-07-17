@@ -1,14 +1,87 @@
 ---
 title: "Docker in CI/CD"
-description: "Learn about Docker in CI/CD in our comprehensive Full Stack Guide."
+description: "Package and deploy applications inside CI/CD pipelines, automating Docker image builds and pushes to registries."
 ---
 
 # Docker in CI/CD
 
-Welcome to the section on **Docker in CI/CD**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Docker in CI/CD.
+Continuous Integration and Continuous Deployment (CI/CD) pipelines automate testing and building applications. Integrating Docker into these pipelines allows you to package application code into standard container images, push them to registry hosts (like Docker Hub or GitHub Container Registry), and deploy them reliably to production.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding pipeline runner environments and image caching setups is key to automated delivery.
+
+### The Containerized Build Pipeline
+A typical containerized CI/CD workflow follows these steps:
+1.  **Code Commit**: Developer pushes code changes to the repository (e.g. GitHub).
+2.  **Trigger Pipeline**: The pipeline runner (e.g. GitHub Actions runner) spins up.
+3.  **Run Tests**: Code is compiled and unit tests are executed.
+4.  **Build Image**: The runner executes `docker build` using the Dockerfile to compile the application image.
+5.  **Push to Registry**: The runner authenticates and pushes the compiled image to a registry container repository.
+
+### Build cache management
+Pipeline runners start with clean filesystems on every run, which bypasses local Docker layer caching. To speed up builds, configure pipeline runners to fetch and store Docker build caches externally (e.g., using GitHub Actions cache configurations).
+
+---
+
+## Code Example
+
+Here is an implementation of a GitHub Actions workflow pipeline that builds and pushes a Docker image to Docker Hub:
+
+```yaml
+name: CI/CD Build and Push
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: shelakeemahesh/demo-app:latest
+```
+
+---
+
+## Best Practices
+
+*   **Use Secrets for Credentials**: Never commit passwords or registry keys to repository files. Inject them dynamically using environment secrets.
+*   **Tag Images with Git Commit Hashes**: Tag compiled images with the corresponding git commit hash (e.g. `app:sha-a8f9d2`) to enable rollback tracking.
+*   **Run Security Vulnerability Scans**: Run security vulnerability scans (using tools like Trivy) on compiled images inside the pipeline before pushing them to registries.
+*   **Leverage BuildKit cache**: Enable BuildKit caching drivers in pipelines to speed up build runs.
+
+---
+
+## Common Mistakes
+
+*   **Hardcoding registry passwords in workflow files**: Committing credentials to source control, exposing them to anyone with repository access.
+*   **Pushing broken images to registries**: Skipping unit tests in the pipeline and building images from buggy code.
+*   **Using the latest tag exclusively**: Deploying only using `latest` tags, making rollback tracking impossible.
+
+<Callout type="note" title="Image Security Scanners">
+  Vulnerability scanners (like Trivy or Anchore) parse base image system dependencies inside pipelines, identifying outdated packages and blocking builds if security risks are found.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   CI/CD pipelines automate image compilation, testing, and deployment steps.
+*   Store sensitive credentials securely using repository Secrets settings.
+*   Tag images with Git commit hashes to make rollbacks predictable.
+*   Integrate vulnerability scanners inside pipelines to catch security issues early.

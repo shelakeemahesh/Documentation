@@ -1,14 +1,83 @@
 ---
-title: "Messaging (Kafka)"
-description: "Learn about Messaging (Kafka) in our comprehensive Full Stack Guide."
+title: "Messaging"
+description: "Build event-driven microservices using Spring Boot messaging adapters (RabbitMQ, Kafka)."
 ---
 
-# Messaging (Kafka)
+# Messaging
 
-Welcome to the section on **Messaging (Kafka)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Messaging (Kafka).
+Messaging architectures decouple microservices, allowing them to communicate asynchronously using event brokers. Spring Boot simplifies message handling by providing starters for message brokers like Apache Kafka and RabbitMQ, alongside annotation-driven listeners.
 
 ## Core Concepts
+Understanding message routing, publishing, and listener groups is key to event-driven design.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### Async Message Brokers: Kafka vs. RabbitMQ
+-   **RabbitMQ**: A traditional message broker that uses exchanges and queues to route messages to specific destinations. Ideal for complex routing scenarios.
+-   **Apache Kafka**: A high-throughput distributed commit log. Messages are written to topics sequentially and can be read by multiple consumer groups. Ideal for event streaming and high volume logs processing.
+
+### Annotation Listeners: @KafkaListener
+Spring Boot enables asynchronous message consumption using annotation listeners. Declaring `@KafkaListener` on a method compiles it into an active thread consumer that processes incoming messages automatically.
+
+---
+
+## Code Example
+
+Here is an implementation of a Kafka message publisher and listener in Spring Boot:
+
+```java
+package com.example.demo.messaging;
+
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class InventoryEventService {
+
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public InventoryEventService(KafkaTemplate<String, String> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    // Publish event payload to target topic
+    public void publishUpdate(String itemId) {
+        kafkaTemplate.send("inventory-topic", itemId);
+    }
+
+    // Consume event payload from target topic, belonging to groupId
+    @KafkaListener(topics = "inventory-topic", groupId = "inventory-group")
+    public void handleUpdate(String itemId) {
+        System.out.println("Processing inventory update event for item: " + itemId);
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Ensure Idempotency**: Design consumer methods to be idempotent (handling duplicate events safely without side effects) to prevent data inconsistencies.
+*   **Use Dead Letter Queues (DLQ)**: Configure a Dead Letter Queue (DLQ) to route failed messages for manual inspection, preventing blocker messages from halting queues.
+*   **Use Schema Registries**: Use schema serialization registries (like Avro) to enforce event schema structures across microservices.
+*   **Tune Consumer Thread Counts**: Adjust consumer concurrency settings based on partition counts to scale processing throughput.
+
+---
+
+## Common Mistakes
+
+*   **Executing blocking DB calls inside listener threads**: Running long-running database queries inside listener threads without asynchronous task delegation, blocking event consumption queues.
+*   **Ignoring message parsing exceptions**: Failing to handle serialization errors, causing consumer loops to get stuck on malformed messages.
+*   **Forgetting to define unique consumer group IDs**: Running multiple instances of a service with duplicate consumer group IDs, causing partition assignment conflicts in Kafka.
+
+<Callout type="note" title="Idempotent Consumers">
+  Network anomalies can cause message brokers to deliver duplicate events. Ensure your consumer logic check database transaction history first to prevent processing duplicate messages.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Message brokers decouple microservices, allowing them to communicate asynchronously.
+*   RabbitMQ is ideal for routing; Kafka is built for high-throughput event logs.
+*   Use `@KafkaListener` to configure asynchronous consumer methods in Spring Boot.
+*   Always use Dead Letter Queues (DLQ) to route and isolate failed messages.

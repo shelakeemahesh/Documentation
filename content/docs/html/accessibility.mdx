@@ -1,14 +1,80 @@
 ---
-title: "Accessibility (ARIA, a11y basics)"
-description: "Learn about Accessibility (ARIA, a11y basics) in our comprehensive Full Stack Guide."
+title: "Accessibility (a11y)"
+description: "Master accessibility guidelines, focus management, ARIA roles, and WCAG standards in HTML."
 ---
 
-# Accessibility (ARIA, a11y basics)
+# Accessibility (a11y)
 
-Welcome to the section on **Accessibility (ARIA, a11y basics)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Accessibility (ARIA, a11y basics).
+Web accessibility (a11y) means designing and building websites that everyone can navigate, read, and interact with, including individuals with visual, auditory, motor, or cognitive disabilities. In HTML, accessibility is achieved through semantic markup, keyboard focus management, alt descriptions, and ARIA roles.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Developing inclusive interfaces requires understanding focus routing and assistive interfaces.
+
+### WCAG Guidelines
+The Web Content Accessibility Guidelines (WCAG) define international standards for digital accessibility. The four core principles are **P.O.U.R.**:
+*   **Perceivable**: Users must be able to see or hear the information.
+*   **Operable**: Users must be able to navigate using their keyboard, voice controls, or other input devices.
+*   **Understandable**: The content and interface operations must be clear.
+*   **Robust**: The markup must be compatible with modern browsers and assistive screen readers.
+
+### ARIA (Accessible Rich Internet Applications)
+WAI-ARIA attributes are used to define accessible roles, states, and properties when native semantic elements are not available (e.g., when building custom sliders, accordion components, or dropdown menus).
+-   **Roles**: Define what an element is (e.g. `role="dialog"`).
+-   **States & Properties**: Define the element's current state (e.g. `aria-expanded="true"`, `aria-hidden="false"`).
+
+---
+
+## Code Example
+
+Here is a practical, keyboard-accessible toggle switch component built using ARIA roles and focus handling states:
+
+```html
+<!-- Accessible Custom Toggle Switch -->
+<div class="flex items-center gap-3 p-4 bg-zinc-900 border border-zinc-800 rounded-lg max-w-xs">
+    <span id="darkmode-label" class="text-sm font-semibold text-zinc-300">
+        Dark Mode
+    </span>
+    
+    <button
+        type="button"
+        role="switch"
+        aria-checked="true"
+        aria-labelledby="darkmode-label"
+        tabindex="0"
+        class="relative inline-flex h-6 w-11 items-center rounded-full bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-zinc-900"
+    >
+        <span class="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-zinc-950 transition-transform"></span>
+    </button>
+</div>
+```
+
+---
+
+## Best Practices
+
+*   **Provide Image Alt Text**: Always include a descriptive `alt` attribute on `<img>` elements. For decorative images, use empty alt values (`alt=""`) so screen readers ignore them.
+*   **Ensure Keyboard Navigability**: Every interactive element (like buttons and links) must be navigable using the `Tab` key and triggerable using `Enter` or the `Spacebar`.
+*   **Maintain 4.5:1 Color Contrast**: Ensure text has sufficient contrast against its background (minimum ratio of 4.5:1 for normal body text, and 3:1 for large text).
+*   **Use tabindex Wisely**: Use `tabindex="0"` to add custom elements into the natural tab order. Use `tabindex="-1"` to programmatically route focus without tab selection.
+
+---
+
+## Common Mistakes
+
+*   **Forgetting focus outlines**: Using `outline: none` in CSS without providing a visible focus indicator, making it impossible for keyboard users to navigate.
+*   **Using non-interactive tags as buttons**: Creating buttons using `<div onClick={handleClick}>` without adding `role="button"`, `tabindex="0"`, or handling keypress listeners.
+*   **Using image alt text with generic labels**: Writing alt descriptions like `alt="image.jpg"` or `alt="logo"`, which does not explain the visual context to users.
+
+<Callout type="warning" title="First Rule of ARIA">
+  The first rule of ARIA: **If you can use a native semantic HTML element instead of an ARIA role, do it.** Native tags (like `<button>`) have built-in keyboard navigation and accessibility logic that is difficult to recreate manually.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Accessibility ensures all users can navigate your interface.
+*   Follow the four WCAG core principles: Perceivable, Operable, Understandable, and Robust (POUR).
+*   Prioritize native HTML semantic tags before adding ARIA attributes.
+*   Always preserve and style keyboard focus outline indicators.

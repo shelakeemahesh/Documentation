@@ -1,14 +1,97 @@
 ---
-title: "Entity Mapping & Relationships (1:1, 1:N, N:N)"
-description: "Learn about Entity Mapping & Relationships (1:1, 1:N, N:N) in our comprehensive Full Stack Guide."
+title: "Entity Mapping & Relationships"
+description: "Master entity declarations, ID generations, and associations mapping (One-to-Many, Many-to-One)."
 ---
 
-# Entity Mapping & Relationships (1:1, 1:N, N:N)
+# Entity Mapping & Relationships
 
-Welcome to the section on **Entity Mapping & Relationships (1:1, 1:N, N:N)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Entity Mapping & Relationships (1:1, 1:N, N:N).
+Entity Mapping translates Java class structures into database tables. Configuring relations (like One-to-Many, Many-to-One, and Many-to-Many) correctly ensures Hibernate executes efficient queries and maintains referential integrity.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding relationship owners and cascade options is key to database schema mapping.
+
+### The Relationship Owner
+In bidirectional mappings, you must define which entity owns the relationship using the `mappedBy` attribute on the non-owning side. The owning side holds the foreign key column in the database (typically mapped using `@JoinColumn` on `@ManyToOne` bindings).
+
+### Cascade Actions
+Cascade options propagate EntityManager actions to associated child entities:
+-   `PERSIST`: Saving a parent automatically saves its children.
+-   `REMOVE`: Deleting a parent automatically deletes its children.
+-   `ALL`: Propagates all actions (persist, merge, remove) to child entities.
+
+---
+
+## Code Example
+
+Here is an implementation of a bidirectional `@OneToMany` relationship between `Customer` and `Order` entities:
+
+```java
+package com.devdocs.mapping;
+
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "customers")
+class Customer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Relationship Owner is Order (mapped by customer field in Order)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
+
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setCustomer(this); // Maintain bidirectional link synchronization
+    }
+}
+
+@Entity
+@Table(name = "orders")
+class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Owning side (hosts the customer_id foreign key column)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
+    public void setCustomer(Customer customer) { this.customer = customer; }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Prefer LAZY Fetching**: Always declare `@ManyToOne` and `@OneToOne` relations with `fetch = FetchType.LAZY` to prevent loading unnecessary child records from the database.
+*   **Synchronize Bidirectional Links**: Always write helper methods (like `addOrder` above) to update both sides of a bidirectional relationship, keeping object references in memory synchronized.
+*   **Avoid CascadeType.REMOVE on Shared Entities**: Do not use `CascadeType.REMOVE` on `@ManyToMany` relationships, as deleting one entity will trigger cascaded deletion of shared entities.
+*   **Use JoinColumns explicitly**: Set custom foreign key column names using `@JoinColumn` explicitly to maintain schema naming conventions.
+
+---
+
+## Common Mistakes
+
+*   **Using EAGER loading on large collections**: Leaving the default `FetchType.EAGER` active on `@OneToMany` relationships, causing Hibernate to load thousands of child records and exhaust system memory.
+*   **Forgetting to set mappedBy**: Declaring bidirectional relationships without `mappedBy`, causing Hibernate to generate redundant join tables.
+*   **Forgetting to synchronize bidirectional links**: Updating only one side of a bidirectional relationship in memory, leading to save errors or out-of-sync objects.
+
+<Callout type="warning" title="Eager Mappings">
+  `@ManyToOne` and `@OneToOne` default to Eager loading in JPA. You must override them explicitly with `fetch = FetchType.LAZY` to prevent database performance bottlenecks.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   The owning side of a bidirectional relationship hosts the foreign key mapping (`@JoinColumn`).
+*   Define `mappedBy` on the non-owning side of bidirectional relationships.
+*   Configure cascade options carefully to propagate save or delete events.
+*   Use Lazy fetching (`FetchType.LAZY`) by default on all relationship mappings.

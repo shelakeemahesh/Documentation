@@ -1,14 +1,82 @@
 ---
 title: "Prototypes & Classes"
-description: "Learn about Prototypes & Classes in our comprehensive Full Stack Guide."
+description: "Understand prototypal inheritance, constructor functions, and ES6 class syntax."
 ---
 
 # Prototypes & Classes
 
-Welcome to the section on **Prototypes & Classes**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Prototypes & Classes.
+JavaScript uses prototypal inheritance to share methods and properties between objects. ES6 classes provide a clean, modern syntax on top of this prototype system, offering an object-oriented programming (OOP) model that compiles down to prototype delegations.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding prototypal chains and class syntaxes is key to object model design.
+
+### Prototypal Inheritance
+Every object in JavaScript has an internal link to a prototype object (`[[Prototype]]`, accessed via `Object.getPrototypeOf()` or `__proto__`). When you look up a property on an object, JavaScript checks the object itself first. If it cannot find it, it searches up the prototype chain until it reaches `null`.
+
+### ES6 Classes: Syntactic Sugar
+Classes are not a new inheritance model; they are a clean wrapper around standard prototypal inheritance. The `class` keyword declares properties, constructors, static methods, and child extensions (`extends`) simply.
+
+---
+
+## Code Example
+
+Here is an implementation of inheritance using modern ES6 classes:
+
+```javascript
+class User {
+    constructor(name) {
+        this.name = name;
+    }
+    
+    // Shared prototype method
+    greet() {
+        return `Hello, my name is ${this.name}`;
+    }
+}
+
+class Admin extends User {
+    constructor(name, role) {
+        super(name); // Call the parent constructor
+        this.role = role;
+    }
+    
+    // Override parent method
+    greet() {
+        return `${super.greet()} and I am an ${this.role}`;
+    }
+}
+
+const adminObj = new Admin('Mahesh', 'Administrator');
+console.log(adminObj.greet()); // "Hello, my name is Mahesh and I am an Administrator"
+```
+
+---
+
+## Best Practices
+
+*   **Use class Syntax**: Always use ES6 classes instead of writing raw prototype assignments manually.
+*   **Call super() in constructors**: Always call `super()` first in subclass constructors to initialize parent bindings.
+*   **Use static for Utilities**: Define helper utility functions as `static` methods on the class so they can be called directly without instantiating objects.
+*   **Favor Composition Over Inheritance**: Avoid building deep class inheritance structures. Compose objects to share behavior dynamically instead.
+
+---
+
+## Common Mistakes
+
+*   **Re-declaring prototype methods in constructors**: Defining methods inside the constructor (e.g. `this.greet = function() {}`), which recreates the function for *every* object instance, wasting memory.
+*   **Forgetting the new keyword**: Calling class constructor functions without `new`, which throws runtime exceptions.
+*   **Mutating Object.prototype directly**: Adding helper methods directly to global prototypes, which can cause naming conflicts with third-party libraries.
+
+<Callout type="note" title="Memory Allocation">
+  Prototype methods are allocated in memory once and shared across all instances. Adding methods inside the constructor function duplicates the memory allocation for every new object instance.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   JavaScript classes are a syntactic wrapper over prototypal inheritance.
+*   Objects delegate missing property queries upward along the prototype chain.
+*   Subclasses must call `super()` before accessing `this` inside constructors.
+*   Prototype methods save memory by sharing logic across instances.

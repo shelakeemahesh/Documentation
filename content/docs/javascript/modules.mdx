@@ -1,14 +1,77 @@
 ---
-title: "Modules (ESM/CJS)"
-description: "Learn about Modules (ESM/CJS) in our comprehensive Full Stack Guide."
+title: "Modules"
+description: "Understand JavaScript modules, including ESM import/export syntax and CommonJS dependencies."
 ---
 
-# Modules (ESM/CJS)
+# Modules
 
-Welcome to the section on **Modules (ESM/CJS)**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Modules (ESM/CJS).
+JavaScript Modules allow you to split your codebase into separate, reusable files. This makes code easier to test, maintain, and share across features, avoiding namespace conflicts by keeping files isolated.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding modules specifications and export systems is key to codebase organization.
+
+### CommonJS (CJS) vs. ES Modules (ESM)
+-   **CommonJS (Legacy standard)**: Used by default in older Node.js versions. Uses `require()` and `module.exports`. Modules are loaded synchronously.
+-   **ES Modules (Modern web standard)**: Supported natively in browsers and modern Node versions. Uses `import` and `export` statements. Modules are evaluated asynchronously, enabling performance features like **Tree-Shaking** (removing unused code at build time).
+
+### Named vs. Default Exports
+-   **Named Exports**: You can export multiple declarations per file. You must import them using the exact naming in curly braces (`import { func } from './file'`).
+-   **Default Exports**: You can only have one default export per file. You can import it using any name without curly braces (`import customName from './file'`).
+
+---
+
+## Code Example
+
+Here is an implementation of ES Modules showcasing named and default exports:
+
+```javascript
+// 1. Math utilities module (mathUtils.js)
+export const PI = 3.14159;
+
+export function add(a, b) {
+    return a + b;
+}
+
+// Default export for primary logger function
+export default function logResult(value) {
+    console.log(`Result calculation output: ${value}`);
+}
+
+// 2. Importer app module (app.js)
+import log, { PI, add } from './mathUtils.js';
+
+const sum = add(5, 10);
+log(sum); // "Result calculation output: 15"
+console.log(`Pi value is: ${PI}`);
+```
+
+---
+
+## Best Practices
+
+*   **Prefer ES Modules (ESM)**: Write ES Modules in new projects to benefit from native browser support and tree-shaking compilation optimizations.
+*   **Favor Named Exports**: Use named exports to make imports explicit and search-friendly in your IDE, rather than relying on default exports.
+*   **Keep Modules Single-Purpose**: Each file should focus on a single set of related functions or components.
+*   **Specify Extensions in local imports**: Include the `.js` extension when importing local files inside native browser environments to prevent resolve failures.
+
+---
+
+## Common Mistakes
+
+*   **Mixing ESM and CommonJS declarations**: Trying to use `require` inside an ES module, or `import` statements inside a legacy CommonJS file, which throws runtime syntax exceptions.
+*   **Exporting mutable variables directly**: Exporting variables that get changed inside the module, which can cause state sync confusion in importing files.
+*   **Creating circular dependencies**: Designing two modules that import each other, which can lead to values evaluating to `undefined` during initialization.
+
+<Callout type="note" title="Tree-Shaking">
+  ESM imports are static. Because of this static structure, bundlers (like Vite or Webpack) can analyze your code before running it, stripping out unused exports automatically to keep bundle sizes minimal.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Modules isolate code to prevent global scope variable collisions.
+*   CommonJS uses `require` (sync); ES Modules use `import/export` (async).
+*   You can export multiple named elements, but only one default element per file.
+*   Use ESM to support build-time code optimizations like tree-shaking.

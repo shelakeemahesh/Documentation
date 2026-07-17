@@ -1,14 +1,85 @@
 ---
 title: "REST API Development"
-description: "Learn about REST API Development in our comprehensive Full Stack Guide."
+description: "Build clean, RESTful APIs using Spring Boot RestControllers and mappings."
 ---
 
 # REST API Development
 
-Welcome to the section on **REST API Development**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for REST API Development.
+Developing REST APIs is a core task in backend engineering. Spring Boot simplifies REST API development by providing annotation-driven controllers that serialize Java data transfer objects (DTOs) into JSON payloads automatically.
 
 ## Core Concepts
+Understanding request mappings, HTTP methods, and serialization rules is key to REST API design.
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+### Controller Mappings and HTTP Methods
+-   **`@RestController`**: Marks a class as a controller where every method returns data directly as JSON instead of rendering templates.
+-   **HTTP Methods Mapping**: Use `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping` to map specific HTTP actions.
+
+### Extracting Request Parameters
+-   **`@PathVariable`**: Extracts parameters from the URL path (e.g. `/users/{id}`).
+-   **`@RequestParam`**: Extracts query parameters from the URL query string (e.g. `/users?page=1`).
+-   **`@RequestBody`**: Maps incoming JSON request bodies directly to Java DTO objects.
+
+---
+
+## Code Example
+
+Here is an implementation of a REST controller supporting GET and POST requests:
+
+```java
+package com.example.demo.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+record UserDto(String id, String username) {}
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    // Get request mapping utilizing path parameter
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable String id) {
+        UserDto user = new UserDto(id, "Mahesh");
+        return ResponseEntity.ok(user); // Returns HTTP 200 with JSON payload
+    }
+
+    // Post request mapping utilizing JSON body serialization
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        // Business logic mock
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDto); // Returns HTTP 201
+    }
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use ResponseEntity**: Always wrap method return values in `ResponseEntity` to control HTTP status codes, headers, and bodies explicitly.
+*   **Follow REST Naming Conventions**: Use plural nouns for endpoints (e.g. `/api/orders` rather than `/api/getOrders`).
+*   **Enforce API Versioning**: Prefix endpoints with version numbers (e.g. `/api/v1/...`) to manage backward-compatibility updates.
+*   **Use DTOs**: Never expose JPA entity classes directly in controller endpoints. Use Data Transfer Objects (DTOs) to isolate database structures from API specifications.
+
+---
+
+## Common Mistakes
+
+*   **Exposing raw database entities in APIs**: Returning JPA entities directly, which exposes internal database schemas and can trigger circular dependency serialization loops.
+*   **Using wrong HTTP methods**: Using `@PostMapping` for read operations or `@GetMapping` for write operations, violating REST standards.
+*   **Hardcoding error responses inside controller methods**: Bloating controllers with manual try-catch blocks instead of using a global controller advice handler.
+
+<Callout type="note" title="Jackson Serializer">
+  Spring Boot uses the Jackson library under the hood to automatically convert Java objects to JSON strings on response, and deserialize JSON request bodies into Java DTOs.
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   `@RestController` compiles controller class methods directly into JSON endpoints.
+*   Use `ResponseEntity` to return explicit HTTP status codes.
+*   Isolate internal database entities from external APIs using DTO classes.
+*   Extract variables using `@PathVariable`, `@RequestParam`, and `@RequestBody`.

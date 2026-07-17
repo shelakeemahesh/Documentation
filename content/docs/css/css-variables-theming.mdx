@@ -1,14 +1,95 @@
 ---
 title: "CSS Variables & Theming"
-description: "Learn about CSS Variables & Theming in our comprehensive Full Stack Guide."
+description: "Design dynamic, themeable layouts using CSS Custom Properties and scope bindings."
 ---
 
 # CSS Variables & Theming
 
-Welcome to the section on **CSS Variables & Theming**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for CSS Variables & Theming.
+CSS Variables (officially called CSS Custom Properties) allow you to store and reuse style values across stylesheets. They enable dynamic, themeable interfaces (like switching between light and dark mode) by allowing variable values to update in real-time via CSS selectors or JavaScript.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding property scopes and fallback parameters is key to building flexible design systems.
+
+### Declaring and Using Variables
+CSS variables are prefixed with two dashes (`--`) and accessed using the `var()` function:
+```css
+:root {
+    --primary-color: #f59e0b;
+}
+
+button {
+    background-color: var(--primary-color);
+}
+```
+
+### Global vs. Local Scope
+-   **Global Scope (`:root`)**: Variables declared on the `:root` pseudo-class are available globally across the entire document tree.
+-   **Local Scope**: Variables declared inside specific classes or elements are scoped locally and override global definitions for that element and its children.
+
+### Fallback Values
+You can provide a fallback value inside the `var()` function in case the variable is not defined: `color: var(--text-color, #f4f4f5)`.
+
+---
+
+## Code Example
+
+Here is an implementation of a theme-switching system using global custom properties:
+
+```css
+/* Global Default Variables (Light Mode) */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #18181b;
+    --accent-color: #3b82f6;
+}
+
+/* Dark Mode Overrides */
+.dark {
+    --bg-color: #09090b;
+    --text-color: #f4f4f5;
+    --accent-color: #f59e0b;
+}
+
+/* Target main document layout components */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 300ms ease, color 300ms ease;
+}
+
+.accent-text {
+    color: var(--accent-color);
+}
+```
+
+---
+
+## Best Practices
+
+*   **Use Semantic Names**: Avoid naming variables after color descriptions (e.g. use `--color-primary` rather than `--color-amber`). This makes switching themes much simpler.
+*   **Declare Defaults in :root**: Define global custom properties inside the `:root` block to ensure consistent availability.
+*   **Combine with JavaScript**: Modify custom properties dynamically in JavaScript using `element.style.setProperty('--name', 'value')` to create custom theme toggle logic.
+*   **Keep a Safe Fallback**: Always declare fallback parameters when referencing variables in third-party or library integrations.
+
+---
+
+## Common Mistakes
+
+*   **Confusing Sass variables and CSS variables**: Expecting Sass compile variables (like `$color`) to update dynamically in the browser runtime environment like CSS custom properties.
+*   **Forgetting default values**: Referencing custom properties without providing fallback values, which breaks page rendering if the property definition fails to load.
+*   **Mismatching variable scope**: Declaring custom properties inside a nested class and expecting them to be accessible on unrelated header components.
+
+<Callout type="tip" title="JavaScript Integration">
+  You can update custom properties dynamically in JavaScript: 
+  `document.documentElement.style.setProperty('--accent-color', '#f59e0b');`
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   CSS Custom Properties are reactive variables evaluated at runtime in the browser.
+*   Define global variables inside the `:root` pseudo-class.
+*   Theming is achieved by overriding variable values inside a theme wrapper selector (e.g. `.dark`).
+*   Variables can be accessed and updated dynamically via JavaScript.

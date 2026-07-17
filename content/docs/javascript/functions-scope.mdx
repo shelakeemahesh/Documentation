@@ -1,14 +1,76 @@
 ---
 title: "Functions & Scope"
-description: "Learn about Functions & Scope in our comprehensive Full Stack Guide."
+description: "Learn function declarations, arrow functions, and lexical scope rules."
 ---
 
 # Functions & Scope
 
-Welcome to the section on **Functions & Scope**.
-
-This page covers foundational concepts, key topics, and real-world system design considerations for Functions & Scope.
+Functions are the primary blocks of logic in JavaScript. Understanding execution scopes and hoisting behaviors is essential for writing clean, modular code.
 
 ## Core Concepts
 
-A detailed lesson on this topic will be generated in follow-up updates. Stay tuned!
+Understanding declaration patterns, arrow functions, and scoping rules is key to function design.
+
+### Declarations vs. Expressions
+-   **Function Declarations**: Hoisted to the top of their scope, meaning they can be called before they are defined.
+-   **Function Expressions**: Bound to variables and are not hoisted; they throw errors if called before definition.
+
+### Arrow Functions vs. Regular Functions
+-   **Regular Functions**: Bind their own `this` dynamically based on how they are called.
+-   **Arrow Functions**: Do not have their own `this`. They inherit `this` lexically from their enclosing scope, making them ideal for callback functions.
+
+### Lexical Scope Chain
+JavaScript uses lexical scoping, meaning the nesting of functions determines variable access. Inner functions have access to variables declared in parent scopes, but parent scopes cannot access inner variables.
+
+---
+
+## Code Example
+
+Here is an example demonstrating `this` binding differences in regular and arrow functions:
+
+```javascript
+const user = {
+    username: 'Mahesh',
+    // Regular function binds "this" to the calling object
+    greetRegular() {
+        console.log(`Hello, ${this.username}`);
+    },
+    // Arrow function inherits "this" lexically (global window/undefined)
+    greetArrow: () => {
+        console.log(`Hello, ${this.username}`);
+    }
+};
+
+user.greetRegular(); // Prints: "Hello, Mahesh"
+user.greetArrow();   // Prints: "Hello, undefined"
+```
+
+---
+
+## Best Practices
+
+*   **Use Arrow Functions for Callbacks**: Use arrow functions inside map/filter or event listeners to maintain lexical scope context.
+*   **Keep Functions Pure**: Avoid modifying outer variables directly; pass parameters and return new values.
+*   **Set Default Parameters**: Always declare fallback values inside parameter lists (e.g. `function greet(name = "User")`).
+*   **Limit Global Scope**: Keep variables locked inside local function scopes to prevent namespace pollution.
+
+---
+
+## Common Mistakes
+
+*   **Calling function expressions before definition**: Attempting to run a variable-bound function before its assignment statement.
+*   **Confusing "this" context in callbacks**: Passing regular object methods into timers (like `setTimeout`), which resets the calling context and breaks `this` bindings.
+*   **Creating global variables inside functions**: Assigning values to variables without using `const` or `let`, which binds them to the global object.
+
+<Callout type="note" title="Hoisting Behavior">
+  Function declarations are fully hoisted with their implementation, whereas variable-bound expressions only hoist the variable key (initialized as `undefined`).
+</Callout>
+
+---
+
+## Key Takeaways
+
+*   Function declarations are hoisted; expressions are evaluated at runtime.
+*   Arrow functions inherit `this` lexically from their parent scope context.
+*   Lexical scoping grants child functions access to variables in outer scopes.
+*   Set default arguments on parameter lists to handle missing inputs safely.
